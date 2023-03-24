@@ -1,3 +1,27 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">SkySave</string>
+    <string name="activity_auth_title">AuthActivity</string>
+    <string name="activity_main_title">MainActivity</string>
+
+    <string name="splash_screen_label">Splash Screen</string>
+    <string name="login_label">Login</string>
+    <string name="register_label">Register</string>
+    <string name="forgot_password_label">Forgot password</string>
+
+    <string name="splash_screen_title">Splash Screen</string>
+    <string name="login_title">Login</string>
+    <string name="register_title">Register</string>
+    <string name="forgot_password_title">Forgot password</string>
+
+    <string name="splash_screen_logo_description">App logo</string>
+
+    <string name="login_button">Sign In with Google</string>
+    <string name="login_button_desc">Buton sign in</string>
+    <string name="previous">Previous</string>
+
+    <string name="def_client_id" tools:ignore="Typos">AIzaSyAsabnOQzPPVpcARqkOaCd1NZyuncPbAqs</string>
+
+    <string name="files_title">Files</string>
+    <string name="starred_title">Starred</string>
+    <string name="profile_title">Profile</string>
 </resources>
