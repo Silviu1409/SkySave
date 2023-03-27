@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -55,9 +56,9 @@ class AuthActivity : AppCompatActivity() {
 
         user = auth.currentUser
 
-        val aux = intent.extras?.getSerializable("logout") as? Boolean
+        val aux = intent.getBooleanExtra("logout", false)
 
-        if (aux == true){
+        if (aux){
             logout = true
         }
     }
@@ -109,14 +110,12 @@ class AuthActivity : AppCompatActivity() {
             .show()
     }
 
-    /*
     fun hideKeyboard() {
         if(currentFocus != null) {
             val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
         }
     }
-    */
 
     fun getUser(): FirebaseUser? {
         return user
@@ -124,5 +123,9 @@ class AuthActivity : AppCompatActivity() {
 
     fun getLogout(): Boolean {
         return logout
+    }
+
+    fun getTag(): String{
+        return tag
     }
 }

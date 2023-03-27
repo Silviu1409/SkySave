@@ -1,6 +1,7 @@
 package com.example.skysave
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.OnBackPressedCallback
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
@@ -47,6 +48,14 @@ class MainActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this,onBackPressedCallback)
 
         auth = FirebaseAuth.getInstance()
+
+        val user2 = FirebaseAuth.getInstance().currentUser
+
+        if (user2 != null) {
+            user2.email?.let { Log.w("test", it) }
+            user2.displayName?.let { Log.w("test", it) }
+            user2.photoUrl?.let { Log.w("test", it.toString()) }
+        }
     }
 
     private fun exitApp() {
