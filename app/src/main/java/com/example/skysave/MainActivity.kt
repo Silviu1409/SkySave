@@ -10,10 +10,13 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.skysave.databinding.ActivityMainBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.firebase.auth.FirebaseAuth
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+
+    private lateinit var auth: FirebaseAuth
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
@@ -42,6 +45,8 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         onBackPressedDispatcher.addCallback(this,onBackPressedCallback)
+
+        auth = FirebaseAuth.getInstance()
     }
 
     private fun exitApp() {
@@ -50,5 +55,9 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Yes") { _, _ -> finishAffinity() }
             .setNegativeButton("No", null)
             .show()
+    }
+
+    fun getAuth(): FirebaseAuth{
+        return auth
     }
 }

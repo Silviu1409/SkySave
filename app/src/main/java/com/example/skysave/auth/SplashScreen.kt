@@ -29,7 +29,9 @@ class SplashScreen : Fragment() {
         val motionLayout = binding.SplashScreen
         motionLayout.addTransitionListener(object: MotionLayout.TransitionListener{
             override fun onTransitionStarted(motionLayout: MotionLayout?, startId: Int, endId: Int) {
-
+                if ((activity as AuthActivity).getLogout()){
+                    findNavController().navigate(R.id.action_SplashScreen_to_Login)
+                }
             }
 
             override fun onTransitionChange(motionLayout: MotionLayout?, startId: Int, endId: Int, progress: Float) {

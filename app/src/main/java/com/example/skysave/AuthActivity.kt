@@ -28,6 +28,8 @@ class AuthActivity : AppCompatActivity() {
 
     private var user: FirebaseUser? = null
 
+    private var logout: Boolean = false
+
     private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
@@ -37,6 +39,26 @@ class AuthActivity : AppCompatActivity() {
             } catch (e: ApiException) {
                 Toast.makeText(this, "Logare eșuată!", Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        binding = ActivityAuthBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        onBackPressedDispatcher.addCallback(this,onBackPressedCallback)
+
+        auth = FirebaseAuth.getInstance()
+        createGoogleSignInClient()
+
+        user = auth.currentUser
+
+        val aux = intent.extras?.getSerializable("logout") as? Boolean
+
+        if (aux == true){
+            logout = true
         }
     }
 
@@ -63,32 +85,20 @@ class AuthActivity : AppCompatActivity() {
             }
     }
 
-    private fun createGoogleSignInClient(): GoogleSignInClient {
+    private fun createGoogleSignInClient() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
-        return GoogleSignIn.getClient(this, gso)
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        googleSignInClient.signOut()
     }
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             exitApp()
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        binding = ActivityAuthBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        onBackPressedDispatcher.addCallback(this,onBackPressedCallback)
-
-        auth = FirebaseAuth.getInstance()
-        googleSignInClient = createGoogleSignInClient()
-
-        user = auth.currentUser
     }
 
     private fun exitApp() {
@@ -110,5 +120,9 @@ class AuthActivity : AppCompatActivity() {
 
     fun getUser(): FirebaseUser? {
         return user
+    }
+
+    fun getLogout(): Boolean {
+        return logout
     }
 }

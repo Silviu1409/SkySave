@@ -20,6 +20,9 @@
     <string name="previous">Previous</string>
 
     <string name="files_title">Files</string>
+
     <string name="starred_title">Starred</string>
+
     <string name="profile_title">Profile</string>
+    <string name="profile_logout">Log out</string>
 </resources>
