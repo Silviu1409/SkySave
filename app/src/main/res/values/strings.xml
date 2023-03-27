@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="app_name">SkySave</string>
     <string name="activity_auth_title">AuthActivity</string>
     <string name="activity_main_title">MainActivity</string>
@@ -18,8 +18,6 @@
     <string name="login_button">Sign In with Google</string>
     <string name="login_button_desc">Buton sign in</string>
     <string name="previous">Previous</string>
-
-    <string name="def_client_id" tools:ignore="Typos">AIzaSyAsabnOQzPPVpcARqkOaCd1NZyuncPbAqs</string>
 
     <string name="files_title">Files</string>
     <string name="starred_title">Starred</string>
