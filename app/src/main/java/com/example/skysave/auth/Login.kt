@@ -12,13 +12,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
-import com.example.licenta.datatypes.User
+import com.example.skysave.datatypes.User
 import com.example.skysave.AuthActivity
 import com.example.skysave.MainActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentLoginBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 
 class Login : Fragment() {
@@ -29,7 +28,6 @@ class Login : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -57,15 +55,15 @@ class Login : Fragment() {
                     .addOnCompleteListener(activity) { task ->
                         if (task.isSuccessful) {
                             val user = FirebaseAuth.getInstance().currentUser
-                            val db = FirebaseFirestore.getInstance()
 
                             if (user != null) {
-                                db.collection("users")
+                                (activity as AuthActivity).getDB().collection("users")
                                     .document(user.uid)
                                     .get()
                                     .addOnSuccessListener {document ->
                                         if (document != null && document.exists()) {
-                                            val date = User("" + document.getString("email"),
+                                            val date = User(user.uid,
+                                                "" + document.getString("email"),
                                                 "" + document.getString("alias"))
 
                                             val intent = Intent(activity, MainActivity::class.java)
@@ -74,7 +72,7 @@ class Login : Fragment() {
                                         }
                                     }
                                     .addOnFailureListener { exception ->
-                                        Log.w((activity as AuthActivity).getTag(), "Error fetching documents", exception)
+                                        Log.w(activity.getTag(), "Error fetching documents", exception)
                                         Toast.makeText(activity, "Couldn't log in", Toast.LENGTH_SHORT).show()
                                     }
 

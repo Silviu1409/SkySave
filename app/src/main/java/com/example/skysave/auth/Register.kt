@@ -1,6 +1,8 @@
 package com.example.skysave.auth
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
@@ -11,11 +13,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.example.skysave.AuthActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import java.io.ByteArrayOutputStream
 
 
 class Register : Fragment() {
@@ -49,7 +55,6 @@ class Register : Fragment() {
                 FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(activity) { task ->
                         if (task.isSuccessful) {
-                            val db = FirebaseFirestore.getInstance()
                             val user = FirebaseAuth.getInstance().currentUser
 
                             val date = hashMapOf(
@@ -58,19 +63,52 @@ class Register : Fragment() {
                             )
 
                             if (user != null) {
-                                db.collection("users")
+                                (activity as AuthActivity).getDB().collection("users")
                                     .document(user.uid)
                                     .set(date)
                                     .addOnSuccessListener {
-                                        Log.w((activity as AuthActivity).getTag(), "Registered successfully")
-                                        Toast.makeText(activity, "Registered successfully! Go to the login page to log in.", Toast.LENGTH_LONG).show()
+                                        val glide = Glide.with(this)
 
-                                        binding.registerEmail.text.clear()
-                                        binding.registerPassword.text.clear()
-                                        binding.registerAlias.text.clear()
+                                        val requestBuilder = glide.asBitmap()
+                                            .load("https://cdn-icons-png.flaticon.com/512/3237/3237447.png")
+                                            .apply(RequestOptions().override(75, 75))
+                                        requestBuilder.into(object : CustomTarget<Bitmap>() {
+                                            override fun onResourceReady(
+                                                resource: Bitmap,
+                                                transition: Transition<in Bitmap>?
+                                            ) {
+                                                val folderRef = activity.getStorage().child(user.uid)
+                                                val imageRef = folderRef.child("icon.jpg")
+
+                                                val baos = ByteArrayOutputStream()
+                                                resource.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                                                val data = baos.toByteArray()
+
+                                                val uploadTask = imageRef.putBytes(data)
+                                                uploadTask
+                                                    .addOnSuccessListener {
+                                                        Log.w(tag, "Created folder for user")
+
+                                                        Log.w(activity.getTag(), "Registered successfully")
+                                                        Toast.makeText(activity, "Registered successfully! Go to the login page to log in.", Toast.LENGTH_LONG).show()
+
+                                                        binding.registerEmail.text.clear()
+                                                        binding.registerPassword.text.clear()
+                                                        binding.registerAlias.text.clear()
+                                                    }
+                                                    .addOnFailureListener {exception ->
+                                                        Log.w(tag, "Error creating folder", exception)
+                                                        Toast.makeText(activity, "Couldn't create folder", Toast.LENGTH_SHORT).show()
+                                                    }
+                                            }
+
+                                            override fun onLoadCleared(placeholder: Drawable?) {
+                                                Log.w(tag, "Cancelled load")
+                                            }
+                                        })
                                     }
                                     .addOnFailureListener { exception ->
-                                        Log.w((activity as AuthActivity).getTag(), "Error fetching documents", exception)
+                                        Log.w(activity.getTag(), "Error fetching documents", exception)
                                         Toast.makeText(activity, "Couldn't register", Toast.LENGTH_SHORT).show()
                                     }
                             } else {

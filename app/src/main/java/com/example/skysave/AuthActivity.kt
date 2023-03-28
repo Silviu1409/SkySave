@@ -2,6 +2,8 @@ package com.example.skysave
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
@@ -9,7 +11,12 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.example.skysave.databinding.ActivityAuthBinding
+import com.example.skysave.datatypes.User
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -18,6 +25,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
+import java.io.ByteArrayOutputStream
 
 
 class AuthActivity : AppCompatActivity() {
@@ -26,9 +38,12 @@ class AuthActivity : AppCompatActivity() {
 
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
+    private lateinit var storage: StorageReference
 
     private var user: FirebaseUser? = null
 
+    private var signedinPreviously = true
     private var logout: Boolean = false
 
     private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result ->
@@ -36,6 +51,20 @@ class AuthActivity : AppCompatActivity() {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)!!
+
+                val email = account.email.toString()
+
+                auth.fetchSignInMethodsForEmail(email)
+                    .addOnCompleteListener { task2 ->
+                        if (task2.isSuccessful) {
+                            val signInMethods = task2.result?.signInMethods
+                            if (!(signInMethods != null && signInMethods.isNotEmpty())) {
+                                Log.w(tag, "Not signed in")
+                                signedinPreviously = false
+                            }
+                        }
+                    }
+
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
                 Toast.makeText(this, "Logare eșuată!", Toast.LENGTH_LONG).show()
@@ -52,6 +81,9 @@ class AuthActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this,onBackPressedCallback)
 
         auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
+        storage = Firebase.storage.reference
+
         createGoogleSignInClient()
 
         user = auth.currentUser
@@ -74,12 +106,91 @@ class AuthActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    if (user != null) {
-                        Log.d(tag, user.uid)
-                    }
 
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
+                    if (!signedinPreviously){
+                        val db = FirebaseFirestore.getInstance()
+
+                        val date = hashMapOf(
+                            "email" to user?.email.toString(),
+                            "alias" to user?.displayName.toString()
+                        )
+
+                        if (user != null) {
+                            db.collection("users")
+                                .document(user.uid)
+                                .set(date)
+                                .addOnSuccessListener {
+                                    val glide = Glide.with(this)
+
+                                    val requestBuilder = glide.asBitmap()
+                                        .load(user.photoUrl.toString())
+                                        .apply(RequestOptions().override(75, 75))
+                                    requestBuilder.into(object : CustomTarget<Bitmap>() {
+                                        override fun onResourceReady(
+                                            resource: Bitmap,
+                                            transition: Transition<in Bitmap>?
+                                        ) {
+                                            val folderRef = storage.child(user.uid)
+                                            val imageRef = folderRef.child("icon.jpg")
+
+                                            val baos = ByteArrayOutputStream()
+                                            resource.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                                            val data = baos.toByteArray()
+
+                                            val uploadTask = imageRef.putBytes(data)
+                                            uploadTask
+                                                .addOnSuccessListener {
+                                                    Log.w(tag, "Created folder for user")
+
+                                                    val dateUser = User(user.uid, user.email ?: "", user.displayName ?: "")
+                                                    val intent = Intent(this@AuthActivity, MainActivity::class.java)
+                                                    intent.putExtra("user", dateUser)
+                                                    startActivity(intent)
+                                                }
+                                                .addOnFailureListener {exception ->
+                                                    Log.w(tag, "Error creating folder", exception)
+                                                    Toast.makeText(this@AuthActivity, "Couldn't create folder", Toast.LENGTH_SHORT).show()
+                                                }
+                                        }
+
+                                        override fun onLoadCleared(placeholder: Drawable?) {
+                                            Log.w(tag, "Cancelled load")
+                                        }
+                                    })
+                                }
+                                .addOnFailureListener { exception ->
+                                    Log.w(tag, "Error fetching documents", exception)
+                                    Toast.makeText(this, "Couldn't register", Toast.LENGTH_SHORT).show()
+                                }
+                        } else {
+                            Log.w(tag, "User wasn't created", task.exception)
+                            Toast.makeText(this, "Couldn't register", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        if (user != null) {
+                            db.collection("users")
+                                .document(user.uid)
+                                .get()
+                                .addOnSuccessListener {document ->
+                                    if (document != null && document.exists()) {
+                                        val dateUser = User(user.uid,
+                                            "" + document.getString("email"),
+                                            "" + document.getString("alias"))
+
+                                        val intent = Intent(this, MainActivity::class.java)
+                                        intent.putExtra("user", dateUser)
+                                        startActivity(intent)
+                                    }
+                                }
+                                .addOnFailureListener { exception ->
+                                    Log.w(tag, "Error fetching documents", exception)
+                                    Toast.makeText(this, "Couldn't log in", Toast.LENGTH_SHORT).show()
+                                }
+                        } else {
+                            Log.w(tag, "User does not exist", task.exception)
+                            Toast.makeText(this, "Couldn't log in", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 } else {
                     Toast.makeText(this, "Logare eșuată!", Toast.LENGTH_LONG).show()
                 }
@@ -127,5 +238,13 @@ class AuthActivity : AppCompatActivity() {
 
     fun getTag(): String{
         return tag
+    }
+
+    fun getDB(): FirebaseFirestore {
+        return db
+    }
+
+    fun getStorage(): StorageReference{
+        return storage
     }
 }

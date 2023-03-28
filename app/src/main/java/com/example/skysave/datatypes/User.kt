@@ -1,3 +1,3 @@
-package com.example.licenta.datatypes
+package com.example.skysave.datatypes
 
-data class User(val email: String, val alias: String) : java.io.Serializable
+data class User(val uid: String, val email: String, val alias: String) : java.io.Serializable

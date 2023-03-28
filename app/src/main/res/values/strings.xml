@@ -37,5 +37,8 @@
     <string name="starred_title">Starred</string>
 
     <string name="profile_title">Profile</string>
+    <string name="profile_icon_desc">Profile icon</string>
+    <string name="profile_alias">alias</string>
+    <string name="profile_email">Email:</string>
     <string name="profile_logout">Log out</string>
 </resources>

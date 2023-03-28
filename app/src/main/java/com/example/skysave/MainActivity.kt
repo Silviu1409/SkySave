@@ -12,12 +12,18 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.skysave.databinding.ActivityMainBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
+import com.example.skysave.datatypes.User
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var auth: FirebaseAuth
+    private var user: User? = null
+    private lateinit var storage: StorageReference
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
@@ -49,13 +55,16 @@ class MainActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-        val user2 = FirebaseAuth.getInstance().currentUser
+        @Suppress("DEPRECATION")
+        user = intent.getSerializableExtra("user") as? User
 
-        if (user2 != null) {
-            user2.email?.let { Log.w("test", it) }
-            user2.displayName?.let { Log.w("test", it) }
-            user2.photoUrl?.let { Log.w("test", it.toString()) }
+        if (user != null) {
+            Log.w("test", user!!.uid)
+            Log.w("test", user!!.email)
+            Log.w("test", user!!.alias)
         }
+
+        storage = Firebase.storage.reference
     }
 
     private fun exitApp() {
@@ -68,5 +77,13 @@ class MainActivity : AppCompatActivity() {
 
     fun getAuth(): FirebaseAuth{
         return auth
+    }
+
+    fun getUser(): User?{
+        return user
+    }
+
+    fun getStorage(): StorageReference{
+        return storage
     }
 }

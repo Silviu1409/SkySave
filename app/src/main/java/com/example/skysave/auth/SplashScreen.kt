@@ -3,16 +3,19 @@ package com.example.skysave.auth
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.navigation.fragment.findNavController
 import com.example.skysave.AuthActivity
 import com.example.skysave.MainActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentSplashScreenBinding
+import com.example.skysave.datatypes.User
 
 
 @SuppressLint("CustomSplashScreen")
@@ -43,9 +46,27 @@ class SplashScreen : Fragment() {
             }
 
             override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
-                if ((activity as AuthActivity).getUser() != null) {
-                    val intent = Intent(activity, MainActivity::class.java)
-                    startActivity(intent)
+                val act = activity as AuthActivity
+
+                if (act.getUser() != null) {
+                    act.getDB().collection("users")
+                        .document(act.getUser()!!.uid)
+                        .get()
+                        .addOnSuccessListener {document ->
+                            if (document != null && document.exists()) {
+                                val dateUser = User(act.getUser()!!.uid,
+                                    "" + document.getString("email"),
+                                    "" + document.getString("alias"))
+
+                                val intent = Intent(activity, MainActivity::class.java)
+                                intent.putExtra("user", dateUser)
+                                startActivity(intent)
+                            }
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.w(tag, "Error fetching documents", exception)
+                            Toast.makeText(context, "Couldn't automatically log in", Toast.LENGTH_SHORT).show()
+                        }
                 } else {
                     findNavController().navigate(R.id.action_SplashScreen_to_Login)
                 }
