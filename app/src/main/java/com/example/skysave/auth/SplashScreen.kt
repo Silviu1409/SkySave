@@ -16,6 +16,7 @@ import com.example.skysave.MainActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentSplashScreenBinding
 import com.example.skysave.datatypes.User
+import com.google.firebase.firestore.DocumentReference
 
 
 @SuppressLint("CustomSplashScreen")
@@ -45,6 +46,7 @@ class SplashScreen : Fragment() {
 
             }
 
+            @Suppress("UNCHECKED_CAST")
             override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
                 val act = activity as AuthActivity
 
@@ -56,7 +58,9 @@ class SplashScreen : Fragment() {
                             if (document != null && document.exists()) {
                                 val dateUser = User(act.getUser()!!.uid,
                                     "" + document.getString("email"),
-                                    "" + document.getString("alias"))
+                                    "" + document.getString("alias"),
+                                    document.get("files") as? List<Map<DocumentReference, Boolean>> ?: listOf()
+                                )
 
                                 val intent = Intent(activity, MainActivity::class.java)
                                 intent.putExtra("user", dateUser)

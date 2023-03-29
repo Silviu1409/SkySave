@@ -21,6 +21,7 @@ import com.example.skysave.AuthActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import java.io.ByteArrayOutputStream
 
 
@@ -57,10 +58,10 @@ class Register : Fragment() {
                         if (task.isSuccessful) {
                             val user = FirebaseAuth.getInstance().currentUser
 
-                            val date = hashMapOf(
-                                "email" to email,
-                                "alias" to alias
-                            )
+                            val date = HashMap<String, Any>()
+                            date["email"] = email
+                            date["alias"] = alias
+                            date["files"] = listOf<Map<DocumentReference, Boolean>>()
 
                             if (user != null) {
                                 (activity as AuthActivity).getDB().collection("users")
@@ -70,7 +71,7 @@ class Register : Fragment() {
                                         val glide = Glide.with(this)
 
                                         val requestBuilder = glide.asBitmap()
-                                            .load("https://cdn-icons-png.flaticon.com/512/3237/3237447.png")
+                                            .load(R.drawable.default_icon)
                                             .apply(RequestOptions().override(75, 75))
                                         requestBuilder.into(object : CustomTarget<Bitmap>() {
                                             override fun onResourceReady(

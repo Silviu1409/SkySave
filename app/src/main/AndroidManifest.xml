@@ -14,7 +14,8 @@
         <activity
             android:name=".AuthActivity"
             android:exported="true"
-            android:theme="@style/Theme.SkySave.NoActionBar">
+            android:theme="@style/Theme.SkySave.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -18,6 +18,7 @@ import com.example.skysave.MainActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentLoginBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 
 
 class Login : Fragment() {
@@ -32,6 +33,7 @@ class Login : Fragment() {
         return binding.root
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -64,7 +66,9 @@ class Login : Fragment() {
                                         if (document != null && document.exists()) {
                                             val date = User(user.uid,
                                                 "" + document.getString("email"),
-                                                "" + document.getString("alias"))
+                                                "" + document.getString("alias"),
+                                                document.get("files") as? List<Map<DocumentReference, Boolean>> ?: listOf()
+                                            )
 
                                             val intent = Intent(activity, MainActivity::class.java)
                                             intent.putExtra("user", date)

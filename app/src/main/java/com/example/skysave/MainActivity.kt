@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private var user: User? = null
-    private lateinit var storage: StorageReference
+    private lateinit var folderRef: StorageReference
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
@@ -62,9 +62,10 @@ class MainActivity : AppCompatActivity() {
             Log.w("test", user!!.uid)
             Log.w("test", user!!.email)
             Log.w("test", user!!.alias)
+            Log.w("test", user!!.files.toString())
         }
 
-        storage = Firebase.storage.reference
+        folderRef = Firebase.storage.reference.child(user!!.uid)
     }
 
     private fun exitApp() {
@@ -83,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         return user
     }
 
-    fun getStorage(): StorageReference{
-        return storage
+    fun getFolderRef(): StorageReference{
+        return folderRef
     }
 }

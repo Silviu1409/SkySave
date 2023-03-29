@@ -25,6 +25,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
@@ -100,6 +101,7 @@ class AuthActivity : AppCompatActivity() {
         launcher.launch(signInIntent)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
@@ -110,10 +112,10 @@ class AuthActivity : AppCompatActivity() {
                     if (!signedinPreviously){
                         val db = FirebaseFirestore.getInstance()
 
-                        val date = hashMapOf(
-                            "email" to user?.email.toString(),
-                            "alias" to user?.displayName.toString()
-                        )
+                        val date = HashMap<String, Any>()
+                        date["email"] = user?.email.toString()
+                        date["alias"] = user?.displayName.toString()
+                        date["files"] = listOf<Map<DocumentReference, Boolean>>()
 
                         if (user != null) {
                             db.collection("users")
@@ -142,7 +144,7 @@ class AuthActivity : AppCompatActivity() {
                                                 .addOnSuccessListener {
                                                     Log.w(tag, "Created folder for user")
 
-                                                    val dateUser = User(user.uid, user.email ?: "", user.displayName ?: "")
+                                                    val dateUser = User(user.uid, user.email ?: "", user.displayName ?: "", listOf())
                                                     val intent = Intent(this@AuthActivity, MainActivity::class.java)
                                                     intent.putExtra("user", dateUser)
                                                     startActivity(intent)
@@ -175,7 +177,9 @@ class AuthActivity : AppCompatActivity() {
                                     if (document != null && document.exists()) {
                                         val dateUser = User(user.uid,
                                             "" + document.getString("email"),
-                                            "" + document.getString("alias"))
+                                            "" + document.getString("alias"),
+                                            document.get("files") as? List<Map<DocumentReference, Boolean>> ?: listOf()
+                                        )
 
                                         val intent = Intent(this, MainActivity::class.java)
                                         intent.putExtra("user", dateUser)

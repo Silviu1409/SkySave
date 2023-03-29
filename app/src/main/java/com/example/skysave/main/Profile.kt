@@ -22,8 +22,7 @@ class Profile : Fragment() {
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
 
-        val folderRef = (activity as MainActivity).getStorage().child((activity as MainActivity).getUser()!!.uid)
-        val imageRef = folderRef.child("icon.jpg")
+        val imageRef = (activity as MainActivity).getFolderRef().child("icon.jpg")
 
         val glide = Glide.with(this)
         val requestBuilder = glide.asBitmap().load(imageRef).circleCrop()
