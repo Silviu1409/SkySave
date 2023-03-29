@@ -18,6 +18,12 @@
         tools:layout="@layout/fragment_starred" />
 
     <fragment
+        android:id="@+id/nav_shared"
+        android:name="com.example.skysave.main.Shared"
+        android:label="@string/shared_title"
+        tools:layout="@layout/fragment_shared" />
+
+    <fragment
         android:id="@+id/nav_profile"
         android:name="com.example.skysave.main.Profile"
         android:label="@string/profile_title"

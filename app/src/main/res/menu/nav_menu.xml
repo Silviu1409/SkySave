@@ -13,6 +13,11 @@
         android:title="@string/starred_title" />
 
     <item
+        android:id="@+id/nav_shared"
+        android:icon="@drawable/icon_shared"
+        android:title="@string/shared_title" />
+
+    <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/icon_profile"
         android:title="@string/profile_title" />

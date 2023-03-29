@@ -36,6 +36,8 @@
 
     <string name="starred_title">Starred</string>
 
+    <string name="shared_title">Shared</string>
+
     <string name="profile_title">Profile</string>
     <string name="profile_icon_desc">Profile icon</string>
     <string name="profile_alias">alias</string>
