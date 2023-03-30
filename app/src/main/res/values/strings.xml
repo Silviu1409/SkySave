@@ -1,21 +1,17 @@
 <resources>
     <string name="app_name">SkySave</string>
-    <string name="activity_auth_title">AuthActivity</string>
-    <string name="activity_main_title">MainActivity</string>
 
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
     <string name="hint_alias">Alias</string>
 
     <string name="splash_screen_label">Splash Screen</string>
-    <string name="splash_screen_title">Splash Screen</string>
 
     <string name="login_label">Login</string>
     <string name="login_title">Login</string>
     <string name="login_other_login_method">or Sign In with your email</string>
     <string name="to_login"><u>Do you already have an account? Sign in here.</u></string>
     <string name="login_button_google">Sign In with Google</string>
-    <string name="login_button_desc">Buton sign in</string>
     <string name="login_button">Sign In</string>
 
     <string name="register_label">Register</string>
@@ -29,8 +25,6 @@
     <string name="reset_button">Reset</string>
 
     <string name="splash_screen_logo_description">App logo</string>
-
-    <string name="previous">Previous</string>
 
     <string name="files_title">Files</string>
 

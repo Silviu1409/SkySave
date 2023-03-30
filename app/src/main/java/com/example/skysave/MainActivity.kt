@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+        navView.menu.findItem(R.id.add_placeholder).isEnabled = false
 
         supportActionBar?.hide()
 
