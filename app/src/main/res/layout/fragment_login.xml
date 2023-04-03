@@ -13,7 +13,7 @@
         android:paddingBottom="25dp"
         tools:context=".auth.Login">
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/login_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -45,7 +45,7 @@
             app:layout_constraintTop_toBottomOf="@id/login_title"
             tools:ignore="TextContrastCheck" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/login_other_login_method"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -57,13 +57,16 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/login_Button_google" />
 
-        <EditText
+        <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/login_email"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="25dp"
             android:ems="10"
             android:hint="@string/hint_email"
+            android:textColor="@color/black"
+            android:textColorHint="@color/black"
+            android:backgroundTint="@color/black"
             android:inputType="textEmailAddress"
             android:minHeight="50dp"
             android:importantForAutofill="no"
@@ -71,13 +74,16 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/login_other_login_method" />
 
-        <EditText
+        <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/login_password"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="25dp"
             android:ems="10"
             android:hint="@string/hint_password"
+            android:textColor="@color/black"
+            android:textColorHint="@color/black"
+            android:backgroundTint="@color/black"
             android:inputType="textPassword"
             android:minHeight="50dp"
             android:importantForAutofill="no"
@@ -102,7 +108,7 @@
             app:layout_constraintTop_toBottomOf="@+id/login_password"
             tools:ignore="TextContrastCheck" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/Login_to_Register"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -113,7 +119,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/login_button" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/Login_to_Reset"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

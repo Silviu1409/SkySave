@@ -47,7 +47,7 @@ class ForgotPassword : Fragment() {
                 FirebaseAuth.getInstance().sendPasswordResetEmail(email)
                     .addOnCompleteListener(activity) { task ->
                         if (task.isSuccessful) {
-                            binding.resetEmail.text.clear()
+                            binding.resetEmail.text?.clear()
 
                             Log.w((activity as AuthActivity).getTag(), "Link sent on email!")
                             Toast.makeText(activity, "Link sent on your email!", Toast.LENGTH_SHORT).show()

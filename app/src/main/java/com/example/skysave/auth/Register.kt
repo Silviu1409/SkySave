@@ -93,9 +93,9 @@ class Register : Fragment() {
                                                         Log.w(activity.getTag(), "Registered successfully")
                                                         Toast.makeText(activity, "Registered successfully! Go to the login page to log in.", Toast.LENGTH_LONG).show()
 
-                                                        binding.registerEmail.text.clear()
-                                                        binding.registerPassword.text.clear()
-                                                        binding.registerAlias.text.clear()
+                                                        binding.registerEmail.text?.clear()
+                                                        binding.registerPassword.text?.clear()
+                                                        binding.registerAlias.text?.clear()
                                                     }
                                                     .addOnFailureListener {exception ->
                                                         Log.w(tag, "Error creating folder", exception)

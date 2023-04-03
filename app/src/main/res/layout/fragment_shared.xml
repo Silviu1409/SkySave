@@ -7,7 +7,7 @@
     android:background="@color/white"
     tools:context=".main.Shared">
 
-    <TextView
+    <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/shared_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

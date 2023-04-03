@@ -7,7 +7,7 @@
     android:background="@color/white"
     tools:context=".main.Starred">
 
-    <TextView
+    <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/starred_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
