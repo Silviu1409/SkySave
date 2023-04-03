@@ -8,18 +8,13 @@
         android:title="@string/files_title" />
 
     <item
-        android:id="@+id/nav_starred"
-        android:icon="@drawable/icon_starred"
-        android:title="@string/starred_title" />
+        android:id="@+id/nav_trash"
+        android:icon="@drawable/icon_delete"
+        android:title="@string/trash_title" />
 
     <item
         android:id="@+id/add_placeholder"
         android:title="" />
-
-    <item
-        android:id="@+id/nav_shared"
-        android:icon="@drawable/icon_shared"
-        android:title="@string/shared_title" />
 
     <item
         android:id="@+id/nav_profile"

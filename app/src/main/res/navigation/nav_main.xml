@@ -12,16 +12,10 @@
         tools:layout="@layout/fragment_files" />
 
     <fragment
-        android:id="@+id/nav_starred"
-        android:name="com.example.skysave.main.Starred"
-        android:label="@string/starred_title"
-        tools:layout="@layout/fragment_starred" />
-
-    <fragment
-        android:id="@+id/nav_shared"
-        android:name="com.example.skysave.main.Shared"
-        android:label="@string/shared_title"
-        tools:layout="@layout/fragment_shared" />
+        android:id="@+id/nav_trash"
+        android:name="com.example.skysave.main.Trash"
+        android:label="@string/trash_title"
+        tools:layout="@layout/fragment_trash" />
 
     <fragment
         android:id="@+id/nav_profile"

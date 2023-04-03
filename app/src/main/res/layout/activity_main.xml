@@ -11,53 +11,65 @@
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/bottom_layout"
+        android:layout_above="@+id/bottom_card"
         app:navGraph="@navigation/nav_main" />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/bottom_layout"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/bottom_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_alignParentBottom="true"
-        android:background="@color/white" >
+        app:cardCornerRadius="18dp"
+        app:cardElevation="18dp"
+        app:cardUseCompatPadding="true">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/add_fab"
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/bottom_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="-35dp"
-            android:elevation="8dp"
-            android:src="@drawable/icon_add"
-            android:backgroundTint="@color/teal_200"
-            android:layout_gravity="center_horizontal"
-            app:backgroundTint="@color/white"
-            app:borderWidth="4dp"
-            tools:ignore="ContentDescription,SpeakableTextPresentCheck,ImageContrastCheck" />
+            android:orientation="vertical">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/nav_card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="10dp"
-            app:cardCornerRadius="16dp">
-
-            <com.google.android.material.bottomnavigation.BottomNavigationView
-                android:id="@+id/nav_menu"
-                android:layout_width="wrap_content"
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/add_fab"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:itemBackground="@color/bottom_nav_color_select"
-                app:itemIconTint="@color/white"
-                app:itemTextColor="@color/white"
-                app:labelVisibilityMode="selected"
-                app:menu="@menu/nav_menu"
-                tools:ignore="VisualLintBottomNav"
-                tools:itemBackground="@android:color/holo_blue_dark" />
+                android:layout_gravity="center_horizontal"
+                android:layout_marginStart="42.5dp"
+                android:layout_marginBottom="-35dp"
+                android:backgroundTint="@color/teal_200"
+                android:elevation="8dp"
+                android:src="@drawable/icon_add"
+                app:backgroundTint="@color/white"
+                app:borderWidth="4dp"
+                app:tint="@color/white"
+                tools:ignore="ContentDescription,SpeakableTextPresentCheck,ImageContrastCheck" />
 
-        </androidx.cardview.widget.CardView>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/nav_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="37.5dp"
+                android:layout_marginEnd="37.5dp"
+                android:layout_marginBottom="15dp"
+                app:cardCornerRadius="16dp">
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+                <com.google.android.material.bottomnavigation.BottomNavigationView
+                    android:id="@+id/nav_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:itemBackground="@color/bottom_nav_color_select"
+                    app:itemIconSize="26dp"
+                    app:itemIconTint="@color/white"
+                    app:itemTextColor="@color/white"
+                    app:labelVisibilityMode="selected"
+                    app:menu="@menu/nav_menu"
+                    tools:ignore="VisualLintBottomNav"
+                    tools:itemBackground="@android:color/holo_blue_dark" />
+
+            </androidx.cardview.widget.CardView>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </androidx.cardview.widget.CardView>
 
 </RelativeLayout>

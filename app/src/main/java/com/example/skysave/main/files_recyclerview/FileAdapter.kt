@@ -1,10 +1,17 @@
 package com.example.skysave.main.files_recyclerview
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.skysave.R
@@ -14,7 +21,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class FileAdapter(private val fragment: Files, private val files: ArrayList<StorageReference>) : RecyclerView.Adapter<FileViewHolder>(), Filterable {
+class FileAdapter(private val context: Context?, private val fragment: Files, private val files: ArrayList<StorageReference>) : RecyclerView.Adapter<FileViewHolder>(), Filterable {
 
     var filteredFileItems = files
 
@@ -74,6 +81,30 @@ class FileAdapter(private val fragment: Files, private val files: ArrayList<Stor
                     .into(holder.filePreviewView)
             } else {
                 holder.filePreviewView.setImageResource(R.drawable.file_preview)
+            }
+        }
+
+        holder.fileStarView.setOnClickListener {
+            if(context != null) {
+                Toast.makeText(context, "File added to starred!", Toast.LENGTH_SHORT).show()
+
+                val emptyStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_empty)
+                val fullStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_filled)
+
+                holder.fileStarView.setImageDrawable(emptyStar)
+
+                val anim = ObjectAnimator.ofPropertyValuesHolder(
+                    holder.fileStarView,
+                    PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
+                    PropertyValuesHolder.ofFloat("scaleY", 0f, 1f)
+                )
+                anim.duration = 500
+                anim.addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationStart(animation: Animator) {
+                        holder.fileStarView.setImageDrawable(fullStar)
+                    }
+                })
+                anim.start()
             }
         }
     }

@@ -31,14 +31,14 @@ class Files : Fragment() {
         searchView = binding.searchBar
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        adapter = FileAdapter(this, arrayListOf())
+        adapter = FileAdapter(context, this, arrayListOf())
         recyclerView.adapter = adapter
 
         val filesRef = (activity as MainActivity).getFolderRef().child("files")
         val query = filesRef.listAll()
 
         query.addOnSuccessListener { result ->
-            adapter = FileAdapter(this, result.items as ArrayList<StorageReference>)
+            adapter = FileAdapter(context, this, result.items as ArrayList<StorageReference>)
 
             if  (adapter.itemCount == 0){
                 binding.noFilesText.visibility = View.VISIBLE
