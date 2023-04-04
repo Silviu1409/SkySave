@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
+import androidx.appcompat.widget.AppCompatImageButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.skysave.MainActivity
@@ -23,12 +24,16 @@ class Files : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: FileAdapter
     private lateinit var searchView: SearchView
+    private lateinit var searchStarredView: AppCompatImageButton
+
+    private var isStarred: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentFilesBinding.inflate(inflater, container, false)
 
         recyclerView = binding.filesList
         searchView = binding.searchBar
+        searchStarredView = binding.searchStarred
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         adapter = FileAdapter(context, this, arrayListOf())
@@ -58,6 +63,8 @@ class Files : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
+                binding.searchStarred.setImageResource(R.drawable.icon_starred_empty)
+
                 if(newText == ""){
                     this.onQueryTextSubmit("")
                 }
@@ -66,6 +73,17 @@ class Files : Fragment() {
                 return false
             }
         })
+
+        binding.searchStarred.setOnClickListener {
+            if (!isStarred) {
+                isStarred = true
+                binding.searchStarred.setImageResource(R.drawable.icon_starred_filled)
+            } else {
+                isStarred = false
+                binding.searchStarred.setImageResource(R.drawable.icon_starred_empty)
+            }
+            adapter.filterStarred(isStarred)
+        }
 
         return binding.root
     }

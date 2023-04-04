@@ -21,6 +21,7 @@ import com.example.skysave.MainActivity
 import com.example.skysave.R
 import com.example.skysave.main.Files
 import com.google.firebase.storage.StorageReference
+import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -56,6 +57,25 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun filterStarred(isStarred: Boolean){
+        var filteredList = mutableListOf<StorageReference>()
+
+        if (!isStarred){
+            filteredList = files
+        } else {
+            for (item in files){
+                if (item.toString() in starredFiles){
+                    filteredList.add(item)
+                }
+            }
+        }
+
+        filteredFileItems = filteredList as ArrayList<StorageReference>
+        fragment.updateText()
+        notifyDataSetChanged()
+    }
+
     override fun getFilter(): Filter {
         return filter
     }
@@ -71,6 +91,8 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
 
         if (file.toString() in starredFiles) {
             holder.fileStarView.setImageResource(R.drawable.icon_starred_filled)
+        } else {
+            holder.fileStarView.setImageResource(R.drawable.icon_starred_empty)
         }
 
         file.metadata.addOnSuccessListener { metadata ->
@@ -95,7 +117,7 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
 
         holder.fileStarView.setOnClickListener {
             if(context != null) {
-                if (file.toString() !in starredFiles){
+                if (file.toString() !in starredFiles) {
                     Toast.makeText(context, "File added to starred!", Toast.LENGTH_SHORT).show()
 
                     val aux = starredFiles.toMutableList()
@@ -170,26 +192,60 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
         }
 
         holder.fileShareView.setOnClickListener {
-            file.downloadUrl.addOnSuccessListener { uri ->
-                val fileUrl = uri.toString()
-                val fileType = "text/html"
+            file.downloadUrl
+                .addOnSuccessListener { uri ->
+                    val fileUrl = uri.toString()
+                    val fileType = "text/html"
 
 
-                val sendIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = fileType
-                    putExtra(Intent.EXTRA_TITLE, file.name)
-                    putExtra(Intent.EXTRA_TEXT, fileUrl)
+                    val sendIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = fileType
+                        putExtra(Intent.EXTRA_TITLE, file.name)
+                        putExtra(Intent.EXTRA_TEXT, fileUrl)
+                    }
+
+                    val chooser = Intent.createChooser(sendIntent, "Share file...")
+                    holder.itemView.context.startActivity(chooser)
+
+                    Log.w("test", "File shared")
                 }
+                .addOnFailureListener { exception ->
+                    Log.w("test", exception.message.toString())
+                    Log.w("test", "Failed to get file download url")
+                }
+        }
 
-                val chooser = Intent.createChooser(sendIntent, "Share file...")
-                holder.itemView.context.startActivity(chooser)
+        holder.fileTrashView.setOnClickListener {
+            val newFile = (context as MainActivity).getFolderRef().child("trash/${file.name}")
 
-                Log.w("test", "File shared")
-            }.addOnFailureListener { exception ->
-                Log.w("test", exception.message.toString())
-                Log.w("test", "Failed to get file download url")
-            }
+            val localFile = File.createTempFile(file.name.substringBeforeLast("."), file.name.substringAfterLast(".", ""))
+            file.getFile(localFile)
+                .addOnSuccessListener {
+                    newFile.putFile(Uri.fromFile(localFile))
+                        .addOnSuccessListener {
+                            files.remove(file)
+                            notifyItemRemoved(position)
+
+                            localFile.delete()
+                            file.delete()
+
+                            Log.w("test", "File moved successfully!")
+                            Toast.makeText(context, "${newFile.name} moved to trash!", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { exception ->
+                            localFile.delete()
+
+                            Log.w("err", exception.message.toString())
+                            Log.w("test", "Failed to move file!")
+                        }
+                }
+                .addOnFailureListener { exception ->
+                    localFile.delete()
+
+                    Log.w("err", exception.message.toString())
+                    Log.w("test", "Failed to move file!")
+                }
         }
     }
 

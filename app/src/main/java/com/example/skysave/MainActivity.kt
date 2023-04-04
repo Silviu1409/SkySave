@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.provider.OpenableColumns
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -105,60 +106,71 @@ class MainActivity : AppCompatActivity() {
         notificationChannel("upload_notification_channel", NotificationManager.IMPORTANCE_LOW)
 
         val fileRef = folderRef.child("files/$fileName")
-        val uploadTask = fileRef.putFile(selectedFileUri)
 
-        val notificationId = 0
+        fileRef.downloadUrl
+            .addOnSuccessListener {
+                Log.w("test", "File already exists!")
 
-        val notificationBuilder = NotificationCompat.Builder(this, "upload_notification_channel")
-            .setContentTitle("Uploading $fileName")
-            .setSmallIcon(R.drawable.icon_notification)
-            .setProgress(100, 0, false)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(notificationId, notificationBuilder.build())
-
-        uploadTask
-            .addOnProgressListener { snapshot ->
-                val progress = (100.0 * snapshot.bytesTransferred / snapshot.totalByteCount).toInt()
-                notificationBuilder.setProgress(100, progress, false).setContentText("$progress%")
-                notificationManager.notify(notificationId, notificationBuilder.build())
+                Toast.makeText(this, "File already uploaded!", Toast.LENGTH_SHORT).show()
             }
-            .addOnSuccessListener {snapshot ->
-                notificationBuilder.setContentText("Upload complete")
-                    .setProgress(0, 0, false)
-                notificationManager.notify(notificationId, notificationBuilder.build())
+            .addOnFailureListener {
+                Log.w("test", "File doesn't already exist.")
 
-                notificationChannel("upload_notification_channel_2", NotificationManager.IMPORTANCE_HIGH)
-                val completedNotificationBuilder = NotificationCompat.Builder(this, "upload_notification_channel_2")
+                val uploadTask = fileRef.putFile(selectedFileUri)
+
+                val notificationId = 0
+
+                val notificationBuilder = NotificationCompat.Builder(this, "upload_notification_channel")
+                    .setContentTitle("Uploading $fileName")
                     .setSmallIcon(R.drawable.icon_notification)
-                    .setContentTitle("File Upload Complete")
-                    .setContentText("Your file has been uploaded successfully.")
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                notificationManager.notify(notificationId, completedNotificationBuilder.build())
+                    .setProgress(100, 0, false)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
 
-                val fragment = supportFragmentManager.fragments.first()
-                val wantedFragment = fragment.childFragmentManager.fragments.first()
-
-                if (wantedFragment is Files) {
-                    val newFile = snapshot.metadata?.reference
-
-                    if (newFile != null) {
-                        wantedFragment.refreshRecyclerView(newFile)
-                    } else {
-                        Log.w("test", "RecycleView not updated.")
-                    }
-                }
-
-                Log.w("test", "File uploaded")
-
-            }
-            .addOnFailureListener { exception ->
-                notificationBuilder.setContentText("Upload failed: ${exception.message}")
-                    .setProgress(0, 0, false)
+                val notificationManager = getSystemService(NotificationManager::class.java)
                 notificationManager.notify(notificationId, notificationBuilder.build())
 
-                Log.w("test", "Failed to upload file")
+                uploadTask
+                    .addOnProgressListener { snapshot ->
+                        val progress = (100.0 * snapshot.bytesTransferred / snapshot.totalByteCount).toInt()
+                        notificationBuilder.setProgress(100, progress, false).setContentText("$progress%")
+                        notificationManager.notify(notificationId, notificationBuilder.build())
+                    }
+                    .addOnSuccessListener { snapshot ->
+                        notificationBuilder.setContentText("Upload complete")
+                            .setProgress(0, 0, false)
+                        notificationManager.notify(notificationId, notificationBuilder.build())
+
+                        notificationChannel("upload_notification_channel_2", NotificationManager.IMPORTANCE_HIGH)
+                        val completedNotificationBuilder = NotificationCompat.Builder(this, "upload_notification_channel_2")
+                            .setSmallIcon(R.drawable.icon_notification)
+                            .setContentTitle("File Upload Complete")
+                            .setContentText("Your file has been uploaded successfully.")
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        notificationManager.notify(notificationId, completedNotificationBuilder.build())
+
+                        val fragment = supportFragmentManager.fragments.first()
+                        val wantedFragment = fragment.childFragmentManager.fragments.first()
+
+                        if (wantedFragment is Files) {
+                            val newFile = snapshot.metadata?.reference
+
+                            if (newFile != null) {
+                                wantedFragment.refreshRecyclerView(newFile)
+                            } else {
+                                Log.w("test", "RecycleView not updated.")
+                            }
+                        }
+
+                        Log.w("test", "File uploaded")
+
+                    }
+                    .addOnFailureListener { exception ->
+                        notificationBuilder.setContentText("Upload failed: ${exception.message}")
+                            .setProgress(0, 0, false)
+                        notificationManager.notify(notificationId, notificationBuilder.build())
+
+                        Log.w("test", "Failed to upload file")
+                    }
             }
     }
 
