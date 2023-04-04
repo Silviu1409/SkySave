@@ -53,7 +53,7 @@ class Files : Fragment() {
 
             recyclerView.adapter = adapter
         }.addOnFailureListener {
-            Log.w("test", "Cannot display RecyclerView")
+            Log.w((activity as MainActivity).getTag(), "Cannot display RecyclerView")
         }
 
         binding.searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener{

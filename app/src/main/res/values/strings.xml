@@ -31,6 +31,7 @@
     <string name="files_no_files_found">No files found!</string>
     <string name="file_name">file name.extension</string>
     <string name="file_star">star</string>
+    <string name="file_download">download</string>
     <string name="file_share">share</string>
     <string name="file_delete">delete</string>
     <string name="file_preview">file preview</string>

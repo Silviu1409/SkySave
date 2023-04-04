@@ -12,6 +12,7 @@ class FileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val fileNameView: TextView = itemView.findViewById(R.id.file_name)
     val filePreviewView: ImageView = itemView.findViewById(R.id.file_preview)
     val fileStarView: ImageButton = itemView.findViewById(R.id.file_star)
+    val fileDownloadView: ImageButton = itemView.findViewById(R.id.file_download)
     val fileShareView: ImageButton = itemView.findViewById(R.id.file_share)
     val fileTrashView: ImageButton = itemView.findViewById(R.id.file_trash)
 }

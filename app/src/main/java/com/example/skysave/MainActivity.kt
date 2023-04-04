@@ -31,6 +31,9 @@ import com.google.firebase.storage.ktx.storage
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
+    private val tag = "test"
+    private val errTag = "err"
+
     private lateinit var auth: FirebaseAuth
     private var user: User? = null
     private lateinit var folderRef: StorageReference
@@ -92,14 +95,16 @@ class MainActivity : AppCompatActivity() {
 
         folderRef = Firebase.storage.reference.child(user!!.uid)
 
-        binding.addFab.setOnClickListener {
+        binding.uploadFab.setOnClickListener {
             getDocumentContent.launch("*/*")
         }
 
-        Log.w("test", user!!.uid)
-        Log.w("test", user!!.alias)
-        Log.w("test", user!!.email)
-        Log.w("test", user!!.starred_files.toString())
+        /*
+            Log.w(tag, user!!.uid)
+            Log.w(tag, user!!.alias)
+            Log.w(tag, user!!.email)
+            Log.w(tag, user!!.starred_files.toString())
+        */
     }
 
     private fun uploadFile() {
@@ -109,12 +114,12 @@ class MainActivity : AppCompatActivity() {
 
         fileRef.downloadUrl
             .addOnSuccessListener {
-                Log.w("test", "File already exists!")
+                Log.w(tag, "File already exists!")
 
                 Toast.makeText(this, "File already uploaded!", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener {
-                Log.w("test", "File doesn't already exist.")
+                Log.w(tag, "File doesn't already exist.")
 
                 val uploadTask = fileRef.putFile(selectedFileUri)
 
@@ -157,11 +162,11 @@ class MainActivity : AppCompatActivity() {
                             if (newFile != null) {
                                 wantedFragment.refreshRecyclerView(newFile)
                             } else {
-                                Log.w("test", "RecycleView not updated.")
+                                Log.w(tag, "RecycleView not updated.")
                             }
                         }
 
-                        Log.w("test", "File uploaded")
+                        Log.w(tag, "File uploaded")
 
                     }
                     .addOnFailureListener { exception ->
@@ -169,7 +174,7 @@ class MainActivity : AppCompatActivity() {
                             .setProgress(0, 0, false)
                         notificationManager.notify(notificationId, notificationBuilder.build())
 
-                        Log.w("test", "Failed to upload file")
+                        Log.w(tag, "Failed to upload file")
                     }
             }
     }
@@ -212,5 +217,13 @@ class MainActivity : AppCompatActivity() {
 
     fun getDb(): FirebaseFirestore {
         return db
+    }
+
+    fun getTag(): String{
+        return tag
+    }
+
+    fun getErrTag(): String{
+        return errTag
     }
 }

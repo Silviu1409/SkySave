@@ -8,6 +8,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -129,10 +130,11 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                         .document(context.getUser()!!.uid)
                         .update("starred_files", starredFiles)
                         .addOnSuccessListener {
-                            Log.w("test", "Added starred file ref to db")
+                            Log.w(context.getTag(), "Added starred file ref to db")
                         }
-                        .addOnFailureListener {
-                            Log.w("test", "Failed to add starred file ref to db")
+                        .addOnFailureListener { exception ->
+                            Log.w(context.getErrTag(), exception.cause.toString())
+                            Log.w(context.getTag(), "Failed to add starred file ref to db")
                         }
 
                     val emptyStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_empty)
@@ -164,10 +166,11 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                         .document(context.getUser()!!.uid)
                         .update("starred_files", starredFiles)
                         .addOnSuccessListener {
-                            Log.w("test", "Removed starred file ref from db")
+                            Log.w(context.getTag(), "Removed starred file ref from db")
                         }
-                        .addOnFailureListener {
-                            Log.w("test", "Failed to remove starred file ref from db")
+                        .addOnFailureListener { exception ->
+                            Log.w(context.getErrTag(), exception.cause.toString())
+                            Log.w(context.getTag(), "Failed to remove starred file ref from db")
                         }
 
                     val emptyStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_empty)
@@ -191,6 +194,28 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
             }
         }
 
+        holder.fileDownloadView.setOnClickListener {
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val appName = context!!.getString(R.string.app_name)
+            val appDir = File(downloadsDir, appName)
+            if (!appDir.exists()) {
+                appDir.mkdir()
+            }
+
+            val localFile = File(appDir, file.name)
+            if (localFile.exists()) {
+                localFile.delete()
+            }
+
+            file.getFile(localFile).addOnSuccessListener {
+                Log.w((context as MainActivity).getTag(), "File downloaded successfully!")
+                Toast.makeText(context, "${file.name} downloaded!", Toast.LENGTH_SHORT).show()
+            }.addOnFailureListener { exception ->
+                Log.w((context as MainActivity).getErrTag(), exception.cause.toString())
+                Log.w(context.getTag(), "Failed to download file")
+            }
+        }
+
         holder.fileShareView.setOnClickListener {
             file.downloadUrl
                 .addOnSuccessListener { uri ->
@@ -208,11 +233,11 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                     val chooser = Intent.createChooser(sendIntent, "Share file...")
                     holder.itemView.context.startActivity(chooser)
 
-                    Log.w("test", "File shared")
+                    Log.w((context as MainActivity).getTag(), "File shared")
                 }
                 .addOnFailureListener { exception ->
-                    Log.w("test", exception.message.toString())
-                    Log.w("test", "Failed to get file download url")
+                    Log.w((context as MainActivity).getErrTag(), exception.cause.toString())
+                    Log.w(context.getTag(), "Failed to get file download url")
                 }
         }
 
@@ -230,21 +255,21 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                             localFile.delete()
                             file.delete()
 
-                            Log.w("test", "File moved successfully!")
+                            Log.w(context.getTag(), "File moved successfully!")
                             Toast.makeText(context, "${newFile.name} moved to trash!", Toast.LENGTH_SHORT).show()
                         }
                         .addOnFailureListener { exception ->
                             localFile.delete()
 
-                            Log.w("err", exception.message.toString())
-                            Log.w("test", "Failed to move file!")
+                            Log.w(context.getErrTag(), exception.cause.toString())
+                            Log.w(context.getTag(), "Failed to move file!")
                         }
                 }
                 .addOnFailureListener { exception ->
                     localFile.delete()
 
-                    Log.w("err", exception.message.toString())
-                    Log.w("test", "Failed to move file!")
+                    Log.w(context.getErrTag(), exception.cause.toString())
+                    Log.w(context.getTag(), "Failed to move file!")
                 }
         }
     }
