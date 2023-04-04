@@ -21,6 +21,7 @@ import com.example.skysave.main.Files
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
@@ -32,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private var user: User? = null
     private lateinit var folderRef: StorageReference
+    private lateinit var db: FirebaseFirestore
 
     private lateinit var selectedFileUri: Uri
     private lateinit var fileName: String
@@ -82,6 +84,7 @@ class MainActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this,onBackPressedCallback)
 
         auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
 
         @Suppress("DEPRECATION")
         user = intent.getSerializableExtra("user") as? User
@@ -91,6 +94,11 @@ class MainActivity : AppCompatActivity() {
         binding.addFab.setOnClickListener {
             getDocumentContent.launch("*/*")
         }
+
+        Log.w("test", user!!.uid)
+        Log.w("test", user!!.alias)
+        Log.w("test", user!!.email)
+        Log.w("test", user!!.starred_files.toString())
     }
 
     private fun uploadFile() {
@@ -188,5 +196,9 @@ class MainActivity : AppCompatActivity() {
             val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
         }
+    }
+
+    fun getDb(): FirebaseFirestore {
+        return db
     }
 }

@@ -18,7 +18,6 @@ import com.example.skysave.MainActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentLoginBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentReference
 
 
 class Login : Fragment() {
@@ -67,7 +66,7 @@ class Login : Fragment() {
                                             val date = User(user.uid,
                                                 "" + document.getString("email"),
                                                 "" + document.getString("alias"),
-                                                document.get("files") as? List<Map<DocumentReference, Boolean>> ?: listOf()
+                                                document.get("starred_files") as? List<String> ?: listOf()
                                             )
 
                                             val intent = Intent(activity, MainActivity::class.java)

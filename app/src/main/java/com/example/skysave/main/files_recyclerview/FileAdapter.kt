@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Filter
@@ -14,6 +15,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.skysave.MainActivity
 import com.example.skysave.R
 import com.example.skysave.main.Files
 import com.google.firebase.storage.StorageReference
@@ -24,6 +26,7 @@ import kotlin.collections.ArrayList
 class FileAdapter(private val context: Context?, private val fragment: Files, private val files: ArrayList<StorageReference>) : RecyclerView.Adapter<FileViewHolder>(), Filterable {
 
     var filteredFileItems = files
+    private var starredFiles: List<String> = (context as MainActivity).getUser()?.starred_files ?: listOf()
 
     private val filter = object : Filter() {
         override fun performFiltering(constraint: CharSequence?): FilterResults {
@@ -64,6 +67,10 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
         val file = filteredFileItems[position]
         holder.fileNameView.text = file.name
 
+        if (file.toString() in starredFiles) {
+            holder.fileStarView.setImageResource(R.drawable.icon_starred_filled)
+        }
+
         file.metadata.addOnSuccessListener { metadata ->
             if (metadata.contentType?.startsWith("image/") == true) {
                 holder.filePreviewView.setImageResource(R.drawable.image_preview)
@@ -86,25 +93,77 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
 
         holder.fileStarView.setOnClickListener {
             if(context != null) {
-                Toast.makeText(context, "File added to starred!", Toast.LENGTH_SHORT).show()
+                if (file.toString() !in starredFiles){
+                    Toast.makeText(context, "File added to starred!", Toast.LENGTH_SHORT).show()
 
-                val emptyStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_empty)
-                val fullStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_filled)
+                    val aux = starredFiles.toMutableList()
+                    aux.add(file.toString())
+                    starredFiles = aux.toList()
+                    (context as MainActivity).getUser()?.starred_files = starredFiles
 
-                holder.fileStarView.setImageDrawable(emptyStar)
+                    context.getDb().collection("users")
+                        .document(context.getUser()!!.uid)
+                        .update("starred_files", starredFiles)
+                        .addOnSuccessListener {
+                            Log.w("test", "Added starred file ref to db")
+                        }
+                        .addOnFailureListener {
+                            Log.w("test", "Failed to add starred file ref to db")
+                        }
 
-                val anim = ObjectAnimator.ofPropertyValuesHolder(
-                    holder.fileStarView,
-                    PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
-                    PropertyValuesHolder.ofFloat("scaleY", 0f, 1f)
-                )
-                anim.duration = 500
-                anim.addListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationStart(animation: Animator) {
-                        holder.fileStarView.setImageDrawable(fullStar)
-                    }
-                })
-                anim.start()
+                    val emptyStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_empty)
+                    val fullStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_filled)
+
+                    holder.fileStarView.setImageDrawable(emptyStar)
+
+                    val anim = ObjectAnimator.ofPropertyValuesHolder(
+                        holder.fileStarView,
+                        PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
+                        PropertyValuesHolder.ofFloat("scaleY", 0f, 1f)
+                    )
+                    anim.duration = 300
+                    anim.addListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationStart(animation: Animator) {
+                            holder.fileStarView.setImageDrawable(fullStar)
+                        }
+                    })
+                    anim.start()
+                } else {
+                    Toast.makeText(context, "File removed from starred!", Toast.LENGTH_SHORT).show()
+
+                    val aux = starredFiles.toMutableList()
+                    aux.remove(file.toString())
+                    starredFiles = aux.toList()
+                    (context as MainActivity).getUser()?.starred_files = starredFiles
+
+                    context.getDb().collection("users")
+                        .document(context.getUser()!!.uid)
+                        .update("starred_files", starredFiles)
+                        .addOnSuccessListener {
+                            Log.w("test", "Removed starred file ref from db")
+                        }
+                        .addOnFailureListener {
+                            Log.w("test", "Failed to remove starred file ref from db")
+                        }
+
+                    val emptyStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_empty)
+                    val fullStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_filled)
+
+                    holder.fileStarView.setImageDrawable(fullStar)
+
+                    val anim = ObjectAnimator.ofPropertyValuesHolder(
+                        holder.fileStarView,
+                        PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
+                        PropertyValuesHolder.ofFloat("scaleY", 0f, 1f)
+                    )
+                    anim.duration = 300
+                    anim.addListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationStart(animation: Animator) {
+                            holder.fileStarView.setImageDrawable(emptyStar)
+                        }
+                    })
+                    anim.start()
+                }
             }
         }
     }

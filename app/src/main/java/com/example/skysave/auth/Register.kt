@@ -21,7 +21,6 @@ import com.example.skysave.AuthActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentReference
 import java.io.ByteArrayOutputStream
 
 
@@ -61,7 +60,7 @@ class Register : Fragment() {
                             val date = HashMap<String, Any>()
                             date["email"] = email
                             date["alias"] = alias
-                            date["files"] = listOf<Map<DocumentReference, Boolean>>()
+                            date["starred_files"] = listOf<String>()
 
                             if (user != null) {
                                 (activity as AuthActivity).getDB().collection("users")

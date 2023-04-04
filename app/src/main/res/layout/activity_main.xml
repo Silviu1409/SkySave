@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal" >
+    android:background="@color/white"
+    android:orientation="horizontal">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/activity_main"
@@ -19,6 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:backgroundTint="@color/white"
         app:cardCornerRadius="18dp"
         app:cardElevation="18dp"
         app:cardUseCompatPadding="true">

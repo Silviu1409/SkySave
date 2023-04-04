@@ -16,7 +16,6 @@ import com.example.skysave.MainActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentSplashScreenBinding
 import com.example.skysave.datatypes.User
-import com.google.firebase.firestore.DocumentReference
 
 
 @SuppressLint("CustomSplashScreen")
@@ -59,7 +58,7 @@ class SplashScreen : Fragment() {
                                 val dateUser = User(act.getUser()!!.uid,
                                     "" + document.getString("email"),
                                     "" + document.getString("alias"),
-                                    document.get("files") as? List<Map<DocumentReference, Boolean>> ?: listOf()
+                                    document.get("starred_files") as? List<String> ?: listOf()
                                 )
 
                                 val intent = Intent(activity, MainActivity::class.java)
