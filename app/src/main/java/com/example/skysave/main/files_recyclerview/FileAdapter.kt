@@ -6,6 +6,8 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -164,6 +166,29 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                     })
                     anim.start()
                 }
+            }
+        }
+
+        holder.fileShareView.setOnClickListener {
+            file.downloadUrl.addOnSuccessListener { uri ->
+                val fileUrl = uri.toString()
+                val fileType = "text/html"
+
+
+                val sendIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    type = fileType
+                    putExtra(Intent.EXTRA_TITLE, file.name)
+                    putExtra(Intent.EXTRA_TEXT, fileUrl)
+                }
+
+                val chooser = Intent.createChooser(sendIntent, "Share file...")
+                holder.itemView.context.startActivity(chooser)
+
+                Log.w("test", "File shared")
+            }.addOnFailureListener { exception ->
+                Log.w("test", exception.message.toString())
+                Log.w("test", "Failed to get file download url")
             }
         }
     }
