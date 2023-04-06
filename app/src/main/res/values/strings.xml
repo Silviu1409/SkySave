@@ -36,6 +36,8 @@
     <string name="file_delete">delete</string>
     <string name="file_preview">file preview</string>
 
+    <string name="file_player">file player</string>
+
     <string name="search_hint">Search…</string>
 
     <string name="trash_title">Trash</string>

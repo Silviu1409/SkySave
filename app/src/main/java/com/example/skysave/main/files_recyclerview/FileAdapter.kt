@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
@@ -21,13 +22,15 @@ import com.bumptech.glide.Glide
 import com.example.skysave.MainActivity
 import com.example.skysave.R
 import com.example.skysave.main.Files
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
 import com.google.firebase.storage.StorageReference
 import java.io.File
 import java.util.*
-import kotlin.collections.ArrayList
 
 
-class FileAdapter(private val context: Context?, private val fragment: Files, private val files: ArrayList<StorageReference>) : RecyclerView.Adapter<FileViewHolder>(), Filterable {
+class FileAdapter(private val context: Context?, private val fragment: Files, private val files: ArrayList<StorageReference>) : RecyclerView.Adapter<FileViewHolder>(), Filterable, Player.Listener {
 
     var filteredFileItems = files
     private var starredFiles: List<String> = (context as MainActivity).getUser()?.starred_files ?: listOf()
@@ -98,20 +101,50 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
 
         file.metadata.addOnSuccessListener { metadata ->
             if (metadata.contentType?.startsWith("image/") == true) {
+                holder.filePreviewView.visibility = View.VISIBLE
                 holder.filePreviewView.setImageResource(R.drawable.image_preview)
 
                 Glide.with(holder.itemView)
                     .load(file)
                     .into(holder.filePreviewView)
-            } else if (metadata.contentType?.startsWith("audio/") == true) {
-                holder.filePreviewView.setImageResource(R.drawable.audio_preview)
-            } else if (metadata.contentType?.startsWith("video/") == true) {
-                holder.filePreviewView.setImageResource(R.drawable.video_preview)
+            } else if (metadata.contentType?.startsWith("audio/") == true || metadata.contentType?.startsWith("video/") == true) {
 
-                Glide.with(holder.itemView)
-                    .load(file)
-                    .into(holder.filePreviewView)
+                if (metadata.contentType?.startsWith("audio/") == true) {
+                    holder.filePreviewView.setImageResource(R.drawable.audio_preview)
+                } else if (metadata.contentType?.startsWith("video/") == true) {
+                    holder.filePreviewView.setImageResource(R.drawable.video_preview)
+
+                    Glide.with(holder.itemView)
+                        .load(file)
+                        .into(holder.filePreviewView)
+                }
+
+                val localFile = File.createTempFile(file.name.substringBeforeLast("."), file.name.substringAfterLast(".", ""))
+
+                file.getFile(localFile)
+                    .addOnSuccessListener {
+                        holder.filePreviewView.visibility = View.GONE
+                        holder.filePlayerView.visibility = View.VISIBLE
+
+                        val player = ExoPlayer.Builder(context!!).build()
+                        val mediaItem = MediaItem.fromUri(localFile.toURI().toString())
+
+                        player.setMediaItem(mediaItem)
+                        player.prepare()
+                        player.addListener(this)
+
+                        holder.filePlayerView.player = player
+                    }
+                    .addOnFailureListener { exception ->
+                        holder.filePreviewView.visibility = View.VISIBLE
+                        holder.filePlayerView.visibility = View.GONE
+
+                        Log.w((context as MainActivity).getErrTag(), exception.cause.toString())
+                        Log.w(context.getTag(), "Failed to download file!")
+                    }
             } else {
+                holder.filePreviewView.visibility = View.VISIBLE
+                holder.filePlayerView.visibility = View.GONE
                 holder.filePreviewView.setImageResource(R.drawable.file_preview)
             }
         }
