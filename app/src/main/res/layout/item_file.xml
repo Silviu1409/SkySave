@@ -4,12 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="15dp"
     android:layout_marginHorizontal="25dp"
+    android:layout_marginVertical="15dp"
     android:background="@drawable/item_file_background"
     android:orientation="vertical"
-    android:paddingHorizontal="20dp"
-    android:paddingVertical="10dp">
+    android:paddingHorizontal="12.5dp"
+    android:paddingVertical="7.5dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -48,12 +48,13 @@
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <ImageButton
                     android:id="@+id/file_star"
                     android:layout_width="wrap_content"
-                    android:layout_height="24sp"
+                    android:layout_height="26sp"
                     android:adjustViewBounds="true"
                     android:backgroundTint="#00000000"
                     android:contentDescription="@string/file_star"
@@ -62,24 +63,44 @@
                     android:src="@drawable/icon_starred_empty"
                     tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
 
-                <androidx.appcompat.widget.AppCompatImageButton
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:id="@+id/file_download"
                     android:layout_width="wrap_content"
-                    android:layout_height="24sp"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
                     android:adjustViewBounds="true"
-                    android:backgroundTint="#00000000"
-                    android:contentDescription="@string/file_download"
-                    android:padding="0dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/icon_download"
-                    app:tint="@android:color/holo_blue_dark"
-                    tools:ignore="TouchTargetSizeCheck" />
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/file_download_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="24sp"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerInParent="true"
+                        android:layout_toStartOf="@+id/file_download_size"
+                        android:backgroundTint="#00000000"
+                        android:contentDescription="@string/file_download"
+                        android:padding="0dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/icon_download"
+                        app:tint="@android:color/holo_blue_dark"
+                        tools:ignore="TouchTargetSizeCheck" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/file_download_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/file_download_size"
+                        android:textColor="@color/black"
+                        android:textSize="11sp" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <androidx.appcompat.widget.AppCompatImageButton
                     android:id="@+id/file_share"
                     android:layout_width="wrap_content"
-                    android:layout_height="24sp"
+                    android:layout_height="26sp"
                     android:layout_marginStart="10dp"
                     android:adjustViewBounds="true"
                     android:backgroundTint="#00000000"
@@ -93,7 +114,7 @@
                 <androidx.appcompat.widget.AppCompatImageButton
                     android:id="@+id/file_trash"
                     android:layout_width="wrap_content"
-                    android:layout_height="24sp"
+                    android:layout_height="26sp"
                     android:layout_marginStart="10dp"
                     android:adjustViewBounds="true"
                     android:backgroundTint="#00000000"
@@ -112,11 +133,10 @@
     </RelativeLayout>
 
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/file_content"
         android:layout_width="300dp"
         android:layout_height="180dp"
         android:layout_gravity="center"
-        android:layout_marginLeft="35dp"
-        android:layout_marginRight="35dp"
         app:cardBackgroundColor="#00000000"
         app:cardCornerRadius="12dp"
         app:strokeColor="@color/black"

@@ -2,6 +2,7 @@ package com.example.skysave.main
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,11 +11,14 @@ import com.bumptech.glide.Glide
 import com.example.skysave.AuthActivity
 import com.example.skysave.MainActivity
 import com.example.skysave.databinding.FragmentProfileBinding
+import java.io.File
 
 
 class Profile : Fragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var mainActivityContext: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -22,14 +26,49 @@ class Profile : Fragment() {
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
 
-        val imageRef = (activity as MainActivity).getFolderRef().child("icon.jpg")
+        mainActivityContext = (activity as MainActivity)
 
-        val glide = Glide.with(this)
-        val requestBuilder = glide.asBitmap().load(imageRef).circleCrop()
-        requestBuilder.into(binding.profileIcon)
+        val tempLocalFile = File(requireContext().cacheDir, "icon.jpg")
 
-        binding.profileAlias.text = (activity as MainActivity).getUser()!!.alias
-        binding.profileEmail.text = binding.profileEmail.text.toString().plus(" ").plus((activity as MainActivity).getUser()!!.email)
+        val imageRef = mainActivityContext.getFolderRef().child("icon.jpg")
+
+        imageRef.metadata
+            .addOnSuccessListener {  metadata ->
+
+                if(tempLocalFile.exists() && tempLocalFile.length() == metadata.sizeBytes){
+                    Log.w(mainActivityContext.getTag(), "Profile logo is already cached")
+
+                    Glide.with(this)
+                        .asBitmap()
+                        .load(tempLocalFile)
+                        .circleCrop()
+                        .into(binding.profileIcon)
+                } else {
+                    Log.w(mainActivityContext.getTag(), "Profile logo is not cached")
+
+                    Glide.with(this)
+                        .asBitmap()
+                        .load(imageRef)
+                        .circleCrop()
+                        .into(binding.profileIcon)
+
+                    imageRef.getFile(tempLocalFile)
+                        .addOnSuccessListener {
+                            Log.w(mainActivityContext.getTag(), "Saved file to cache!")
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
+                            Log.w(mainActivityContext.getTag(), "Failed to save file to cache!")
+                        }
+                }
+            }
+            .addOnFailureListener {  exception ->
+                Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
+                Log.w(mainActivityContext.getTag(), "Failed to get icon metadata!")
+            }
+
+        binding.profileAlias.text = mainActivityContext.getUser()!!.alias
+        binding.profileEmail.text = binding.profileEmail.text.toString().plus(" ").plus(mainActivityContext.getUser()!!.email)
 
         return binding.root
     }
@@ -38,7 +77,7 @@ class Profile : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.profileLogout.setOnClickListener {
-            (activity as MainActivity).getAuth().signOut()
+            mainActivityContext.getAuth().signOut()
 
             val intent = Intent(activity, AuthActivity::class.java)
             intent.putExtra("logout", true)

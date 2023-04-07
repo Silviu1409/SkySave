@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.OpenableColumns
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
@@ -26,6 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
@@ -41,6 +43,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var selectedFileUri: Uri
     private lateinit var fileName: String
+
+    private val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+    private val dirName = "SkySave"
+    private val appDir = File(downloadsDir, dirName)
+    private lateinit var fileDir: File
 
     private val getDocumentContent =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -76,7 +83,7 @@ class MainActivity : AppCompatActivity() {
 
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_files, R.id.nav_trash, R.id.nav_profile
+                R.id.nav_files, R.id.nav_trash, R.id.nav_downloaded, R.id.nav_profile
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -97,6 +104,16 @@ class MainActivity : AppCompatActivity() {
 
         binding.uploadFab.setOnClickListener {
             getDocumentContent.launch("*/*")
+        }
+
+        if (!appDir.exists()) {
+            appDir.mkdir()
+        }
+
+        fileDir = appDir.resolve(user!!.alias)
+
+        if (!fileDir.exists()) {
+            fileDir.mkdir()
         }
 
         /*
@@ -225,5 +242,9 @@ class MainActivity : AppCompatActivity() {
 
     fun getErrTag(): String{
         return errTag
+    }
+
+    fun getFileDir(): File{
+        return fileDir
     }
 }

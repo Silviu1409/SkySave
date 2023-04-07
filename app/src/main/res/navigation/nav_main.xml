@@ -18,6 +18,12 @@
         tools:layout="@layout/fragment_trash" />
 
     <fragment
+        android:id="@+id/nav_downloaded"
+        android:name="com.example.skysave.main.Downloaded"
+        android:label="@string/downloaded_title"
+        tools:layout="@layout/fragment_downloaded" />
+
+    <fragment
         android:id="@+id/nav_profile"
         android:name="com.example.skysave.main.Profile"
         android:label="@string/profile_title"

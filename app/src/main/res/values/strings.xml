@@ -32,6 +32,7 @@
     <string name="file_name">file name.extension</string>
     <string name="file_star">star</string>
     <string name="file_download">download</string>
+    <string name="file_download_size">100 MB</string>
     <string name="file_share">share</string>
     <string name="file_delete">delete</string>
     <string name="file_preview">file preview</string>
@@ -41,6 +42,8 @@
     <string name="search_hint">Search…</string>
 
     <string name="trash_title">Trash</string>
+
+    <string name="downloaded_title">Downloaded</string>
 
     <string name="profile_title">Profile</string>
     <string name="profile_icon_desc">Profile icon</string>
