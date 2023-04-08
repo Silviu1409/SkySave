@@ -46,14 +46,16 @@ class Files : Fragment() {
             adapter = FileAdapter(context, this, result.items as ArrayList<StorageReference>)
 
             if  (adapter.itemCount == 0){
+                binding.searchBarCard.visibility = View.INVISIBLE
                 binding.noFilesText.visibility = View.VISIBLE
             } else {
+                binding.searchBarCard.visibility = View.VISIBLE
                 binding.noFilesText.visibility = View.INVISIBLE
             }
 
             recyclerView.adapter = adapter
         }.addOnFailureListener {
-            Log.w((activity as MainActivity).getTag(), "Cannot display RecyclerView")
+            Log.w((activity as MainActivity).getTag(), "Cannot display file RecyclerView")
         }
 
         binding.searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener{

@@ -36,12 +36,14 @@
     <string name="file_share">share</string>
     <string name="file_delete">delete</string>
     <string name="file_preview">file preview</string>
-
     <string name="file_player">file player</string>
 
     <string name="search_hint">Search…</string>
 
     <string name="trash_title">Trash</string>
+    <string name="trash_restore">Restore</string>
+    <string name="trash_remove">Remove</string>
+    <string name="trash_no_files">No files in trash!</string>
 
     <string name="downloaded_title">Downloaded</string>
 

@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.skysave.AuthActivity
 import com.example.skysave.MainActivity
 import com.example.skysave.databinding.FragmentProfileBinding
@@ -42,6 +43,8 @@ class Profile : Fragment() {
                         .asBitmap()
                         .load(tempLocalFile)
                         .circleCrop()
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
                         .into(binding.profileIcon)
                 } else {
                     Log.w(mainActivityContext.getTag(), "Profile logo is not cached")
@@ -50,6 +53,8 @@ class Profile : Fragment() {
                         .asBitmap()
                         .load(imageRef)
                         .circleCrop()
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
                         .into(binding.profileIcon)
 
                     imageRef.getFile(tempLocalFile)

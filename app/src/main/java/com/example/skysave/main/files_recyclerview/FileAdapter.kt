@@ -17,11 +17,11 @@ import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import android.widget.Toast
-import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.example.skysave.MainActivity
@@ -150,6 +150,8 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
 
                     Glide.with(holder.itemView)
                         .load(tempLocalFile)
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
                         .into(object : CustomTarget<Drawable>() {
                             override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
                                 val scale = holder.fileContentView.height.toFloat() / resource.intrinsicHeight.toFloat()
@@ -167,6 +169,8 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                 } else {
                     Glide.with(holder.itemView)
                         .load(file)
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
                         .into(object : CustomTarget<Drawable>() {
                             override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
                                 val scale = holder.fileContentView.height.toFloat() / resource.intrinsicHeight.toFloat()
@@ -197,27 +201,6 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                     holder.filePreviewView.setImageResource(R.drawable.audio_preview)
                 } else if (metadata.contentType?.startsWith("video/") == true) {
                     holder.filePreviewView.setImageResource(R.drawable.video_preview)
-
-                    if(tempLocalFile.exists() && tempLocalFile.length() == metadata.sizeBytes){
-                        Log.w(mainActivityContext.getTag(), "File is already cached")
-
-                        Glide.with(holder.itemView)
-                            .load(tempLocalFile)
-                            .into(holder.filePreviewView)
-                    } else {
-                        Glide.with(holder.itemView)
-                            .load(file)
-                            .into(holder.filePreviewView)
-
-                        file.getFile(tempLocalFile)
-                            .addOnSuccessListener {
-                                Log.w(mainActivityContext.getTag(), "Saved file to cache!")
-                            }
-                            .addOnFailureListener { exception ->
-                                Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
-                                Log.w(mainActivityContext.getTag(), "Failed to save file to cache!")
-                            }
-                    }
                 }
 
                 if(tempLocalFile.exists() && tempLocalFile.length() == metadata.sizeBytes){
