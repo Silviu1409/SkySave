@@ -63,6 +63,18 @@ class TrashAdapter(private val context: Context?, private val fragment: Trash, p
         val file = filteredFileItems[position]
         holder.trashNameView.text = file.name
 
+        var fileSizeInBytes = 0L
+
+        file.metadata
+            .addOnSuccessListener { metadata ->
+                fileSizeInBytes = metadata.sizeBytes
+                val fileSize = mainActivityContext.getReadableFileSize(fileSizeInBytes.toDouble())
+                holder.trashSizeView.text = fileSize
+            }
+            .addOnFailureListener {  exception ->
+                Log.e(mainActivityContext.getErrTag(), "Failed to get file metadata: $exception")
+            }
+
         holder.trashRestoreView.setOnClickListener {
             val newFile = mainActivityContext.getFolderRef().child("files/${file.name}")
 
@@ -94,6 +106,9 @@ class TrashAdapter(private val context: Context?, private val fragment: Trash, p
         holder.trashRemoveView.setOnClickListener {
             file.delete()
                 .addOnSuccessListener {
+                    mainActivityContext.changeFolderSize(-fileSizeInBytes)
+                    mainActivityContext.setStorageSpaceUsed(mainActivityContext.getReadableFileSize(mainActivityContext.getFolderSize().toDouble()))
+
                     files.remove(file)
                     notifyItemRemoved(position)
                     Toast.makeText(context, "File removed from cloud storage!", Toast.LENGTH_SHORT).show()

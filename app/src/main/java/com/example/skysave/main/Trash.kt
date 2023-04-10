@@ -24,11 +24,16 @@ class Trash : Fragment() {
     private lateinit var adapter: TrashAdapter
     private lateinit var searchView: SearchView
 
+    private lateinit var mainActivityContext: MainActivity
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentTrashBinding.inflate(inflater, container, false)
+
+        mainActivityContext = (activity as MainActivity)
+        mainActivityContext.setStorageFabVisibility(View.VISIBLE)
 
         recyclerView = binding.trashList
         searchView = binding.searchBar

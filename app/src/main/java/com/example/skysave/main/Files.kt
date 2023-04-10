@@ -26,10 +26,15 @@ class Files : Fragment() {
     private lateinit var searchView: SearchView
     private lateinit var searchStarredView: AppCompatImageButton
 
+    private lateinit var mainActivityContext: MainActivity
+
     private var isStarred: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentFilesBinding.inflate(inflater, container, false)
+
+        mainActivityContext = (activity as MainActivity)
+        mainActivityContext.setStorageFabVisibility(View.VISIBLE)
 
         recyclerView = binding.filesList
         searchView = binding.searchBar
@@ -47,9 +52,11 @@ class Files : Fragment() {
 
             if  (adapter.itemCount == 0){
                 binding.searchBarCard.visibility = View.INVISIBLE
+                binding.searchStarredCard.visibility = View.INVISIBLE
                 binding.noFilesText.visibility = View.VISIBLE
             } else {
                 binding.searchBarCard.visibility = View.VISIBLE
+                binding.searchStarredCard.visibility = View.VISIBLE
                 binding.noFilesText.visibility = View.INVISIBLE
             }
 

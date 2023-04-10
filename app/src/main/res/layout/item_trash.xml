@@ -32,8 +32,8 @@
 
         <ImageButton
             android:id="@+id/trash_restore"
-            android:layout_width="26sp"
-            android:layout_height="26sp"
+            android:layout_width="30sp"
+            android:layout_height="30sp"
             android:adjustViewBounds="true"
             android:layout_centerInParent="true"
             android:layout_toStartOf="@+id/trash_remove"
@@ -45,21 +45,41 @@
             app:tint="@color/white"
             tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
 
-        <ImageButton
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/trash_remove"
-            android:layout_width="26sp"
-            android:layout_height="26sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:adjustViewBounds="true"
             android:layout_alignParentEnd="true"
             android:layout_centerInParent="true"
-            android:adjustViewBounds="true"
-            android:backgroundTint="#00000000"
-            android:contentDescription="@string/trash_remove"
-            android:padding="0dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/icon_remove"
-            android:layout_marginStart="10dp"
-            app:tint="@color/white"
-            tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
+            android:gravity="center_horizontal"
+            android:orientation="vertical" >
+
+            <ImageButton
+                android:id="@+id/trash_remove_icon"
+                android:layout_width="26sp"
+                android:layout_height="26sp"
+                android:layout_alignParentStart="true"
+                android:layout_centerInParent="true"
+                android:layout_toStartOf="@+id/trash_remove_size"
+                android:backgroundTint="#00000000"
+                android:contentDescription="@string/trash_remove"
+                android:padding="0dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/icon_remove"
+                app:tint="@color/white"
+                tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/trash_remove_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/file_download_size"
+                android:textColor="@color/white"
+                android:textSize="11sp" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
     </RelativeLayout>
 

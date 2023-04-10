@@ -39,6 +39,8 @@
     <string name="file_player">file player</string>
 
     <string name="search_hint">Search…</string>
+    <string name="space_used">0.41 GB</string>
+    <string name="space_total">1 GB</string>
 
     <string name="trash_title">Trash</string>
     <string name="trash_restore">Restore</string>

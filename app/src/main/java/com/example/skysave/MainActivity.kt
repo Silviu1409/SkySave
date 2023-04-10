@@ -28,8 +28,13 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import java.io.File
+import java.math.BigDecimal
+import java.math.RoundingMode
+import kotlin.math.log10
+import kotlin.math.pow
 
 
+@Suppress("BlockingMethodInNonBlockingContext")
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
@@ -49,18 +54,32 @@ class MainActivity : AppCompatActivity() {
     private val appDir = File(downloadsDir, dirName)
     private lateinit var fileDir: File
 
+    private var folderSize = 0L
+    private var fileSize = 0L
+    private var folderSizeLimit = 1024 * 1024 * 1024L    // 1 GB file storage limit
+    private var fileSizeLimit = 50 * 1024 * 1024L    // 50 MB upload file limit size
+
+
     private val getDocumentContent =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
-                selectedFileUri = uri
+                fileSize = this.contentResolver.openInputStream(uri)?.available()?.toLong()?: 0L
 
-                contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                    val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                    cursor.moveToFirst()
-                    fileName = cursor.getString(nameIndex)
+                if (fileSize > fileSizeLimit){
+                    Log.w(tag, "File is too large (> 50MB)")
+
+                    Toast.makeText(this, "File is too large (> 50MB)", Toast.LENGTH_SHORT).show()
+                } else {
+                    selectedFileUri = uri
+
+                    contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                        val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        cursor.moveToFirst()
+                        fileName = cursor.getString(nameIndex)
+                    }
+
+                    uploadFile()
                 }
-
-                uploadFile()
             }
         }
 
@@ -102,6 +121,11 @@ class MainActivity : AppCompatActivity() {
 
         folderRef = Firebase.storage.reference.child(user!!.uid)
 
+        // get space used in folder
+        folderSize = getFolderSize(folderRef)
+        setStorageSpaceUsed(getReadableFileSize(folderSize.toDouble()))
+        Log.d(tag, "Got folder size: $folderSize bytes")
+
         binding.uploadFab.setOnClickListener {
             getDocumentContent.launch("*/*")
         }
@@ -125,6 +149,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun uploadFile() {
+        // check if firebase storage cap has been reached
+        if (folderSize + fileSize > folderSizeLimit) {
+            Log.w(tag, "Cannot upload file, storage limit reached")
+
+            Toast.makeText(this, "Cannot upload, storage limit reached!", Toast.LENGTH_SHORT).show()
+
+            return
+        }
+
         notificationChannel("upload_notification_channel", NotificationManager.IMPORTANCE_LOW)
 
         val fileRef = folderRef.child("files/$fileName")
@@ -183,6 +216,9 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
 
+                        folderSize += fileSize
+                        setStorageSpaceUsed(getReadableFileSize(folderSize.toDouble()))
+
                         Log.w(tag, "File uploaded")
 
                     }
@@ -211,6 +247,43 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Yes") { _, _ -> finishAffinity() }
             .setNegativeButton("No", null)
             .show()
+    }
+
+    private fun getFolderSize(storageRef: StorageReference): Long {
+        var size = 0L
+        val prefixes = listOf("files/", "trash/")
+
+        for (prefix in prefixes) {
+            val prefixRef = storageRef.child(prefix)
+
+            prefixRef.listAll()
+                .addOnSuccessListener { listResult ->
+                    listResult.items.forEach { item ->
+                        item.metadata.addOnSuccessListener { metadata ->
+                            size += metadata.sizeBytes
+                        }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.e(errTag, "Error getting list of files: $exception")
+                }
+        }
+
+        Log.w(tag, size.toString())
+        return size
+    }
+
+    fun getReadableFileSize(size: Double): String {
+        if (size <= 0) {
+            return "0 bytes"
+        }
+
+        val units = arrayOf("bytes", "KB", "MB")
+        val digitGroups = (log10(size) / log10(1024.0)).toInt()
+        val sizeFormatted = String.format("%.2f", size / 1024.0.pow(digitGroups.toDouble()))
+        val sizeRounded = BigDecimal(sizeFormatted).setScale(2, RoundingMode.HALF_UP).toDouble()
+
+        return String.format("%.2f %s", sizeRounded, units[digitGroups])
     }
 
     fun getAuth(): FirebaseAuth{
@@ -246,5 +319,21 @@ class MainActivity : AppCompatActivity() {
 
     fun getFileDir(): File{
         return fileDir
+    }
+
+    fun getFolderSize(): Long{
+        return folderSize
+    }
+
+    fun changeFolderSize(fileSize: Long){
+        folderSize += fileSize
+    }
+
+    fun setStorageFabVisibility(visibility: Int){
+        binding.storageSpace.visibility = visibility
+    }
+
+    fun setStorageSpaceUsed(spaceUsed: String){
+        binding.usedSpace.text = spaceUsed
     }
 }

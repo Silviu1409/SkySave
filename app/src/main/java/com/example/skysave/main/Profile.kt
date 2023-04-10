@@ -28,6 +28,7 @@ class Profile : Fragment() {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
 
         mainActivityContext = (activity as MainActivity)
+        mainActivityContext.setStorageFabVisibility(View.INVISIBLE)
 
         val tempLocalFile = File(requireContext().cacheDir, "icon.jpg")
 

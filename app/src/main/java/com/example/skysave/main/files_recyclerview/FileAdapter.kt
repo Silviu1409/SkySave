@@ -32,11 +32,7 @@ import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.firebase.storage.StorageReference
 import java.io.File
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.util.*
-import kotlin.math.log10
-import kotlin.math.pow
 import kotlin.math.roundToInt
 
 
@@ -138,7 +134,7 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
             }
 
             val fileSizeInBytes = metadata.sizeBytes.toDouble()
-            val fileSize = getReadableFileSize(fileSizeInBytes)
+            val fileSize = mainActivityContext.getReadableFileSize(fileSizeInBytes)
             holder.fileDownloadSizeView.text = fileSize
 
             if (metadata.contentType?.startsWith("image/") == true) {
@@ -432,19 +428,6 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
     }
 
     override fun getItemCount() = filteredFileItems.size
-
-    private fun getReadableFileSize(size: Double): String {
-        if (size <= 0) {
-            return "0 bytes"
-        }
-
-        val units = arrayOf("bytes", "KB", "MB")
-        val digitGroups = (log10(size) / log10(1024.0)).toInt()
-        val sizeFormatted = String.format("%.2f", size / 1024.0.pow(digitGroups.toDouble()))
-        val sizeRounded = BigDecimal(sizeFormatted).setScale(2, RoundingMode.HALF_UP).toDouble()
-
-        return String.format("%.2f %s", sizeRounded, units[digitGroups])
-    }
 
     private fun Int.dpToPx(): Int {
         val density = Resources.getSystem().displayMetrics.density
