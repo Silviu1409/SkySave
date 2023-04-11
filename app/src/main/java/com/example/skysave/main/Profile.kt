@@ -83,6 +83,7 @@ class Profile : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.profileLogout.setOnClickListener {
+            mainActivityContext.removePreferencesUser()
             mainActivityContext.getAuth().signOut()
 
             val intent = Intent(activity, AuthActivity::class.java)

@@ -107,6 +107,7 @@ class TrashAdapter(private val context: Context?, private val fragment: Trash, p
             file.delete()
                 .addOnSuccessListener {
                     mainActivityContext.changeFolderSize(-fileSizeInBytes)
+                    mainActivityContext.changePreferencesFolderSize()
                     mainActivityContext.setStorageSpaceUsed(mainActivityContext.getReadableFileSize(mainActivityContext.getFolderSize().toDouble()))
 
                     files.remove(file)

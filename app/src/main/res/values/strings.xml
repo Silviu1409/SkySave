@@ -47,8 +47,6 @@
     <string name="trash_remove">Remove</string>
     <string name="trash_no_files">No files in trash!</string>
 
-    <string name="downloaded_title">Downloaded</string>
-
     <string name="profile_title">Profile</string>
     <string name="profile_icon_desc">Profile icon</string>
     <string name="profile_alias">alias</string>

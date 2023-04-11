@@ -42,7 +42,7 @@ class Trash : Fragment() {
         adapter = TrashAdapter(context, this, arrayListOf())
         recyclerView.adapter = adapter
 
-        val filesRef = (activity as MainActivity).getFolderRef().child("trash")
+        val filesRef = mainActivityContext.getFolderRef().child("trash")
         val query = filesRef.listAll()
 
         query.addOnSuccessListener { result ->
@@ -58,12 +58,12 @@ class Trash : Fragment() {
 
             recyclerView.adapter = adapter
         }.addOnFailureListener {
-            Log.w((activity as MainActivity).getTag(), "Cannot display trash RecyclerView")
+            Log.w(mainActivityContext.getTag(), "Cannot display trash RecyclerView")
         }
 
         binding.searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
-                (activity as MainActivity).hideKeyboard()
+                mainActivityContext.hideKeyboard()
                 return false
             }
 

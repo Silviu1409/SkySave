@@ -2,6 +2,10 @@ package com.example.skysave
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -13,6 +17,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -27,6 +32,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -58,6 +67,10 @@ class MainActivity : AppCompatActivity() {
     private var fileSize = 0L
     private var folderSizeLimit = 1024 * 1024 * 1024L    // 1 GB file storage limit
     private var fileSizeLimit = 50 * 1024 * 1024L    // 50 MB upload file limit size
+
+    private lateinit var sharedPreferencesStorage: SharedPreferences
+    private lateinit var sharedPreferencesUser: SharedPreferences
+    private var uri: Uri? = null
 
 
     private val getDocumentContent =
@@ -95,6 +108,9 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        sharedPreferencesStorage = getSharedPreferences("storage_space", Context.MODE_PRIVATE)
+        sharedPreferencesUser = getSharedPreferences("user", Context.MODE_PRIVATE)
+
         val navView: BottomNavigationView = binding.navMenu
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.activity_main) as NavHostFragment
@@ -102,7 +118,7 @@ class MainActivity : AppCompatActivity() {
 
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_files, R.id.nav_trash, R.id.nav_downloaded, R.id.nav_profile
+                R.id.nav_files, R.id.nav_trash, R.id.nav_profile
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -116,15 +132,43 @@ class MainActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
-        @Suppress("DEPRECATION")
-        user = intent.getSerializableExtra("user") as? User
+        uri = intent.data
+        if (uri == null) {
+            @Suppress("DEPRECATION")
+            user = intent.getSerializableExtra("user") as? User
+
+            sharedPreferencesUser.edit().putString("uid", user!!.uid).apply()
+            sharedPreferencesUser.edit().putString("alias", user!!.alias).apply()
+            sharedPreferencesUser.edit().putString("email", user!!.email).apply()
+            sharedPreferencesUser.edit().putStringSet("starred_files", HashSet(user!!.starred_files)).apply()
+        } else {
+            if (sharedPreferencesUser.contains("uid")) {
+                user = User(
+                    sharedPreferencesUser.getString("uid", "")!!,
+                    sharedPreferencesUser.getString("email", "")!!,
+                    sharedPreferencesUser.getString("alias", "")!!,
+                    sharedPreferencesUser.getStringSet("starred_files", setOf<String>())?.toList()!!
+                )
+            } else {
+                val intent = Intent(this, AuthActivity::class.java)
+                intent.putExtra("logout", true)
+                startActivity(intent)
+            }
+        }
 
         folderRef = Firebase.storage.reference.child(user!!.uid)
+        folderSize = sharedPreferencesStorage.getLong(user!!.uid, 0L)
 
-        // get space used in folder
-        folderSize = getFolderSize(folderRef)
-        setStorageSpaceUsed(getReadableFileSize(folderSize.toDouble()))
-        Log.d(tag, "Got folder size: $folderSize bytes")
+        if (folderSize == 0L) {
+            // get space used in folder
+            lifecycleScope.launch(Dispatchers.Main) {
+                folderSize = getFolderSize(folderRef)
+                changePreferencesFolderSize()
+                setStorageSpaceUsed(getReadableFileSize(folderSize.toDouble()))
+
+                Log.d(tag, "Got folder size: $folderSize bytes")
+            }
+        }
 
         binding.uploadFab.setOnClickListener {
             getDocumentContent.launch("*/*")
@@ -196,11 +240,17 @@ class MainActivity : AppCompatActivity() {
                         notificationManager.notify(notificationId, notificationBuilder.build())
 
                         notificationChannel("upload_notification_channel_2", NotificationManager.IMPORTANCE_HIGH)
-                        val completedNotificationBuilder = NotificationCompat.Builder(this, "upload_notification_channel_2")
+
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://skysave.com/files"))
+                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        val pendingIntent = PendingIntent.getActivity(applicationContext, 1, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
+
+                        val completedNotificationBuilder = NotificationCompat.Builder(applicationContext, "upload_notification_channel_2")
                             .setSmallIcon(R.drawable.icon_notification)
                             .setContentTitle("File Upload Complete")
                             .setContentText("Your file has been uploaded successfully.")
                             .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .setContentIntent(pendingIntent)
                         notificationManager.notify(notificationId, completedNotificationBuilder.build())
 
                         val fragment = supportFragmentManager.fragments.first()
@@ -217,6 +267,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         folderSize += fileSize
+                        changePreferencesFolderSize()
                         setStorageSpaceUsed(getReadableFileSize(folderSize.toDouble()))
 
                         Log.w(tag, "File uploaded")
@@ -249,28 +300,23 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun getFolderSize(storageRef: StorageReference): Long {
+    private suspend fun getFolderSize(storageRef: StorageReference): Long = withContext(Dispatchers.IO) {
         var size = 0L
         val prefixes = listOf("files/", "trash/")
 
         for (prefix in prefixes) {
             val prefixRef = storageRef.child(prefix)
+            val listResult = prefixRef.listAll().await()
 
-            prefixRef.listAll()
-                .addOnSuccessListener { listResult ->
-                    listResult.items.forEach { item ->
-                        item.metadata.addOnSuccessListener { metadata ->
-                            size += metadata.sizeBytes
-                        }
-                    }
-                }
-                .addOnFailureListener { exception ->
-                    Log.e(errTag, "Error getting list of files: $exception")
-                }
+            for(item in listResult.items){
+                val metadata = item.metadata.await()
+
+                Log.w(tag, metadata.sizeBytes.toString())
+                size += metadata.sizeBytes
+            }
         }
 
-        Log.w(tag, size.toString())
-        return size
+        return@withContext size
     }
 
     fun getReadableFileSize(size: Double): String {
@@ -335,5 +381,13 @@ class MainActivity : AppCompatActivity() {
 
     fun setStorageSpaceUsed(spaceUsed: String){
         binding.usedSpace.text = spaceUsed
+    }
+
+    fun changePreferencesFolderSize(){
+        sharedPreferencesStorage.edit().putLong(user!!.uid, folderSize).apply()
+    }
+
+    fun removePreferencesUser(){
+        sharedPreferencesUser.edit().clear().apply()
     }
 }
