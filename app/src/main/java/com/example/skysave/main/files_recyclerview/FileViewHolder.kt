@@ -16,6 +16,8 @@ class FileViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     val fileStarView: ImageButton = itemView.findViewById(R.id.file_star)
 
+    val fileViewView: ImageButton = itemView.findViewById(R.id.file_view)
+
     val fileDownloadView: LinearLayoutCompat = itemView.findViewById(R.id.file_download)
     val fileDownloadIconView: ImageButton = itemView.findViewById(R.id.file_download_icon)
     val fileDownloadSizeView: TextView = itemView.findViewById(R.id.file_download_size)

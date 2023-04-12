@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
@@ -17,8 +18,8 @@ import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import android.widget.Toast
-import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -118,15 +119,13 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
             if (fileDir.exists() && fileDir.isDirectory) {
                 if (localFile.exists() && localFile.length() == metadata.sizeBytes) {
                     //if file has been already downloaded, remove the download button
-                    val layoutParams = LinearLayoutCompat.LayoutParams(
-                        LinearLayoutCompat.LayoutParams.WRAP_CONTENT,
-                        LinearLayoutCompat.LayoutParams.MATCH_PARENT
-                    )
-                    layoutParams.width = 0
-                    holder.fileDownloadView.layoutParams = layoutParams
+                    holder.fileDownloadView.visibility = View.GONE
+                    holder.fileViewView.visibility = View.VISIBLE
 
                     Log.w(mainActivityContext.getTag(), "${file.name} was already downloaded")
                 } else {
+                    holder.fileDownloadView.visibility = View.VISIBLE
+
                     Log.w(mainActivityContext.getTag(), "${file.name} was not downloaded previously")
                 }
             } else {
@@ -331,6 +330,19 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
             }
         }
 
+        holder.fileViewView.setOnClickListener {
+            val context: Context = holder.itemView.context
+            val fileUri = FileProvider.getUriForFile(context, context.packageName + ".provider", localFile)
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.setDataAndType(fileUri, "*/*")
+            intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            try {
+                context.startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                Log.e(mainActivityContext.getErrTag(), "Activity not found: ${e.message}")
+            }
+        }
+
         holder.fileDownloadIconView.setOnClickListener {
             if (localFile.exists()) {
                 localFile.delete()
@@ -340,23 +352,15 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                 tempLocalFile.copyTo(localFile, true)
                 Log.w(mainActivityContext.getTag(), "Got file from cache!")
 
-                val layoutParams = LinearLayoutCompat.LayoutParams(
-                    LinearLayoutCompat.LayoutParams.WRAP_CONTENT,
-                    LinearLayoutCompat.LayoutParams.MATCH_PARENT
-                )
-                layoutParams.width = 0
-                holder.fileDownloadView.layoutParams = layoutParams
+                holder.fileDownloadView.visibility = View.GONE
+                holder.fileViewView.visibility = View.VISIBLE
             } else {
                 file.getFile(localFile).addOnSuccessListener {
                     Log.w(mainActivityContext.getTag(), "File downloaded successfully!")
                     Toast.makeText(context, "${file.name} downloaded!", Toast.LENGTH_SHORT).show()
 
-                    val layoutParams = LinearLayoutCompat.LayoutParams(
-                        LinearLayoutCompat.LayoutParams.WRAP_CONTENT,
-                        LinearLayoutCompat.LayoutParams.MATCH_PARENT
-                    )
-                    layoutParams.width = 0
-                    holder.fileDownloadView.layoutParams = layoutParams
+                    holder.fileDownloadView.visibility = View.GONE
+                    holder.fileViewView.visibility = View.VISIBLE
                 }.addOnFailureListener { exception ->
                     Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
                     Log.w(mainActivityContext.getTag(), "Failed to download file")

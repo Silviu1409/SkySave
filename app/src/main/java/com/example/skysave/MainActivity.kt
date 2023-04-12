@@ -158,6 +158,7 @@ class MainActivity : AppCompatActivity() {
 
         folderRef = Firebase.storage.reference.child(user!!.uid)
         folderSize = sharedPreferencesStorage.getLong(user!!.uid, 0L)
+        setStorageSpaceUsed(getReadableFileSize(folderSize.toDouble()))
 
         if (folderSize == 0L) {
             // get space used in folder
