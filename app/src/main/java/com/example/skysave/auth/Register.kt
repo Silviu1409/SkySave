@@ -1,6 +1,7 @@
 package com.example.skysave.auth
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
@@ -134,6 +135,18 @@ class Register : Fragment() {
 
         binding.RegisterToReset.setOnClickListener {
             findNavController().navigate(R.id.action_Register_to_ForgotPassword)
+        }
+
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ) {
+            val layoutParams = binding.registerTitle.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.topMargin = 100
+
+            binding.registerTitle.layoutParams = layoutParams
+        } else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+            val layoutParams = binding.registerTitle.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.topMargin = 250
+
+            binding.registerTitle.layoutParams = layoutParams
         }
 
     }

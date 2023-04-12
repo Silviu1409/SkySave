@@ -32,6 +32,7 @@
             android:name=".AuthActivity"
             android:exported="true"
             android:theme="@style/Theme.SkySave.NoActionBar"
+            android:configChanges="orientation|keyboardHidden"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,6 +43,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|layoutDirection|keyboardHidden"
             android:exported="true" >
 
             <intent-filter>

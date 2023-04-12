@@ -6,11 +6,14 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.OpenableColumns
 import android.util.Log
+import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -191,6 +194,28 @@ class MainActivity : AppCompatActivity() {
             Log.w(tag, user!!.email)
             Log.w(tag, user!!.starred_files.toString())
         */
+
+        onConfigurationChanged(resources.configuration)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        val cardView = binding.navCard
+
+        cardView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                val cardWidth = cardView.width
+                Log.d(tag, cardView.width.toString())
+
+                val layoutParams = binding.uploadFab.layoutParams as ViewGroup.MarginLayoutParams
+                layoutParams.marginStart = (0.125 * cardWidth).toInt()
+
+                binding.uploadFab.layoutParams = layoutParams
+
+                cardView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            }
+        })
     }
 
     private fun uploadFile() {

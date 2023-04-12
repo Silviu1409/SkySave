@@ -33,7 +33,7 @@ class Trash : Fragment() {
         _binding = FragmentTrashBinding.inflate(inflater, container, false)
 
         mainActivityContext = (activity as MainActivity)
-        mainActivityContext.setStorageFabVisibility(View.VISIBLE)
+        mainActivityContext.setStorageFabVisibility(View.INVISIBLE)
 
         recyclerView = binding.trashList
         searchView = binding.searchBar

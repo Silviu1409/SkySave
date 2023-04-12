@@ -17,7 +17,7 @@
             android:id="@+id/register_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="175dp"
+            android:layout_marginTop="125dp"
             android:text="@string/register_title"
             android:textColor="@color/black"
             android:textSize="24sp"

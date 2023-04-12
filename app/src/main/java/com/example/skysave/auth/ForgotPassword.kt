@@ -1,6 +1,7 @@
 package com.example.skysave.auth
 
 import android.content.Context
+import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
@@ -73,6 +74,17 @@ class ForgotPassword : Fragment() {
             findNavController().navigate(R.id.action_ForgotPassword_to_Login)
         }
 
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ) {
+            val layoutParams = binding.resetTitle.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.topMargin = 100
+
+            binding.resetTitle.layoutParams = layoutParams
+        } else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+            val layoutParams = binding.resetTitle.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.topMargin = 250
+
+            binding.resetTitle.layoutParams = layoutParams
+        }
     }
 
     override fun onDestroyView() {
