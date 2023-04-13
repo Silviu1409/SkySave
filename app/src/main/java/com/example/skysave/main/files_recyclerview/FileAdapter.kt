@@ -40,11 +40,10 @@ import kotlin.math.roundToInt
 class FileAdapter(private val context: Context?, private val fragment: Files, private val files: ArrayList<StorageReference>) : RecyclerView.Adapter<FileViewHolder>(), Filterable, Player.Listener {
 
     var filteredFileItems = files
-    private var starredFiles: List<String> = (context as MainActivity).getUser()?.starred_files ?: listOf()
-
-    private val fileDir = (context as MainActivity).getFileDir()
-
     private val mainActivityContext = (context as MainActivity)
+    private var starredFiles: List<String> = mainActivityContext.getUser()?.starred_files ?: listOf()
+    private val fileDir = mainActivityContext.getFileDir()
+
 
     private val filter = object : Filter() {
         override fun performFiltering(constraint: CharSequence?): FilterResults {
@@ -122,14 +121,14 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                     holder.fileDownloadView.visibility = View.GONE
                     holder.fileViewView.visibility = View.VISIBLE
 
-                    Log.w(mainActivityContext.getTag(), "${file.name} was already downloaded")
+                    Log.d(mainActivityContext.getTag(), "${file.name} was already downloaded")
                 } else {
                     holder.fileDownloadView.visibility = View.VISIBLE
 
                     Log.w(mainActivityContext.getTag(), "${file.name} was not downloaded previously")
                 }
             } else {
-                Log.w(mainActivityContext.getTag(), "Folder does not exist")
+                Log.e(mainActivityContext.getErrTag(), "Folder does not exist")
             }
 
             val fileSizeInBytes = metadata.sizeBytes.toDouble()
@@ -141,7 +140,7 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                 holder.filePreviewView.setImageResource(R.drawable.image_preview)
 
                 if(tempLocalFile.exists() && tempLocalFile.length() == metadata.sizeBytes){
-                    Log.w(mainActivityContext.getTag(), "File is already cached")
+                    Log.d(mainActivityContext.getTag(), "File is already cached")
 
                     Glide.with(holder.itemView)
                         .load(tempLocalFile)
@@ -183,23 +182,23 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
 
                     file.getFile(tempLocalFile)
                         .addOnSuccessListener {
-                            Log.w(mainActivityContext.getTag(), "Saved file to cache!")
+                            Log.d(mainActivityContext.getTag(), "Saved file to cache!")
                         }
-                        .addOnFailureListener { exception ->
-                            Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
-                            Log.w(mainActivityContext.getTag(), "Failed to save file to cache!")
+                        .addOnFailureListener { e ->
+                            Log.e(mainActivityContext.getErrTag(), "Failed to save file to cache: ${e.message}")
                         }
                 }
             } else if (metadata.contentType?.startsWith("audio/") == true || metadata.contentType?.startsWith("video/") == true) {
 
                 if (metadata.contentType?.startsWith("audio/") == true) {
                     holder.filePreviewView.setImageResource(R.drawable.audio_preview)
-                } else if (metadata.contentType?.startsWith("video/") == true) {
+                }
+                else if (metadata.contentType?.startsWith("video/") == true) {
                     holder.filePreviewView.setImageResource(R.drawable.video_preview)
                 }
 
                 if(tempLocalFile.exists() && tempLocalFile.length() == metadata.sizeBytes){
-                    Log.w(mainActivityContext.getTag(), "File is already cached")
+                    Log.d(mainActivityContext.getTag(), "File is already cached")
 
                     holder.filePreviewView.visibility = View.GONE
                     holder.filePlayerView.visibility = View.VISIBLE
@@ -212,7 +211,8 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                     player.addListener(this)
 
                     holder.filePlayerView.player = player
-                } else {
+                }
+                else {
                     Log.w(mainActivityContext.getTag(), "File is not cached")
 
                     file.getFile(tempLocalFile)
@@ -229,14 +229,13 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
 
                             holder.filePlayerView.player = player
 
-                            Log.w(mainActivityContext.getTag(), "File is now cached!")
+                            Log.d(mainActivityContext.getTag(), "File is now cached!")
                         }
-                        .addOnFailureListener { exception ->
+                        .addOnFailureListener { e ->
                             holder.filePreviewView.visibility = View.VISIBLE
                             holder.filePlayerView.visibility = View.GONE
 
-                            Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
-                            Log.w(mainActivityContext.getTag(), "Failed to cache file!")
+                            Log.e(mainActivityContext.getErrTag(), "Failed to cache file: ${e.message}")
                         }
                 }
             } else {
@@ -247,8 +246,6 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                 layoutParams.width = 100.dpToPx()
                 layoutParams.height = 100.dpToPx()
                 holder.fileContentView.layoutParams = layoutParams
-
-
 
                 holder.filePreviewView.setImageResource(R.drawable.file_preview)
             }
@@ -267,11 +264,10 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                     .document(mainActivityContext.getUser()!!.uid)
                     .update("starred_files", starredFiles)
                     .addOnSuccessListener {
-                        Log.w(mainActivityContext.getTag(), "Added starred file ref to db")
+                        Log.d(mainActivityContext.getTag(), "Added starred file ref to db")
                     }
-                    .addOnFailureListener { exception ->
-                        Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
-                        Log.w(mainActivityContext.getTag(), "Failed to add starred file ref to db")
+                    .addOnFailureListener { e ->
+                        Log.e(mainActivityContext.getErrTag(), "Failed to add starred file ref to db: ${e.message}")
                     }
 
                 val emptyStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_empty)
@@ -303,11 +299,10 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                     .document(mainActivityContext.getUser()!!.uid)
                     .update("starred_files", starredFiles)
                     .addOnSuccessListener {
-                        Log.w(mainActivityContext.getTag(), "Removed starred file ref from db")
+                        Log.d(mainActivityContext.getTag(), "Removed starred file ref from db")
                     }
-                    .addOnFailureListener { exception ->
-                        Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
-                        Log.w(mainActivityContext.getTag(), "Failed to remove starred file ref from db")
+                    .addOnFailureListener { e ->
+                        Log.e(mainActivityContext.getErrTag(), "Failed to remove starred file ref from db: ${e.message}")
                     }
 
                 val emptyStar = ContextCompat.getDrawable(context, R.drawable.icon_starred_empty)
@@ -350,20 +345,19 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
 
             if (tempLocalFile.exists() && tempLocalFile.length() > 0) {
                 tempLocalFile.copyTo(localFile, true)
-                Log.w(mainActivityContext.getTag(), "Got file from cache!")
+                Log.d(mainActivityContext.getTag(), "Got file from cache!")
 
                 holder.fileDownloadView.visibility = View.GONE
                 holder.fileViewView.visibility = View.VISIBLE
             } else {
                 file.getFile(localFile).addOnSuccessListener {
-                    Log.w(mainActivityContext.getTag(), "File downloaded successfully!")
+                    Log.d(mainActivityContext.getTag(), "File downloaded successfully!")
                     Toast.makeText(context, "${file.name} downloaded!", Toast.LENGTH_SHORT).show()
 
                     holder.fileDownloadView.visibility = View.GONE
                     holder.fileViewView.visibility = View.VISIBLE
-                }.addOnFailureListener { exception ->
-                    Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
-                    Log.w(mainActivityContext.getTag(), "Failed to download file")
+                }.addOnFailureListener { e ->
+                    Log.e(mainActivityContext.getErrTag(), "Failed to download file: ${e.message}")
                 }
             }
         }
@@ -385,11 +379,10 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                     val chooser = Intent.createChooser(sendIntent, "Share file...")
                     holder.itemView.context.startActivity(chooser)
 
-                    Log.w(mainActivityContext.getTag(), "File shared")
+                    Log.d(mainActivityContext.getTag(), "File shared")
                 }
-                .addOnFailureListener { exception ->
-                    Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
-                    Log.w(mainActivityContext.getTag(), "Failed to get file download url")
+                .addOnFailureListener { e ->
+                    Log.e(mainActivityContext.getErrTag(), "Failed to get file download url: ${e.message}")
                 }
         }
 
@@ -406,21 +399,19 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                             tempLocalFile.delete()
                             file.delete()
 
-                            Log.w(mainActivityContext.getTag(), "File moved successfully!")
+                            Log.d(mainActivityContext.getTag(), "File moved successfully!")
                             Toast.makeText(context, "${newFile.name} moved to trash!", Toast.LENGTH_SHORT).show()
                         }
-                        .addOnFailureListener { exception ->
+                        .addOnFailureListener { e ->
                             tempLocalFile.delete()
 
-                            Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
-                            Log.w(mainActivityContext.getTag(), "Failed to move file!")
+                            Log.e(mainActivityContext.getErrTag(), "Failed to move file: ${e.message}")
                         }
                 }
-                .addOnFailureListener { exception ->
+                .addOnFailureListener { e ->
                     tempLocalFile.delete()
 
-                    Log.w(mainActivityContext.getErrTag(), exception.cause.toString())
-                    Log.w(mainActivityContext.getTag(), "Failed to move file!")
+                    Log.e(mainActivityContext.getErrTag(), "Failed to move file: ${e.message}")
                 }
         }
     }

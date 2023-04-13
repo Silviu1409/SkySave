@@ -26,6 +26,7 @@ class Trash : Fragment() {
 
     private lateinit var mainActivityContext: MainActivity
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -57,8 +58,8 @@ class Trash : Fragment() {
             }
 
             recyclerView.adapter = adapter
-        }.addOnFailureListener {
-            Log.w(mainActivityContext.getTag(), "Cannot display trash RecyclerView")
+        }.addOnFailureListener { e ->
+            Log.e(mainActivityContext.getTag(), "Cannot display trash RecyclerView: ${e.message}")
         }
 
         binding.searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener{

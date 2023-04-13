@@ -22,11 +22,17 @@ class ForgotPassword : Fragment() {
     private var _binding: FragmentForgotPasswordBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var authActivityContext: AuthActivity
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentForgotPasswordBinding.inflate(inflater, container, false)
+
+        authActivityContext = (activity as AuthActivity)
+
         return binding.root
     }
 
@@ -42,7 +48,7 @@ class ForgotPassword : Fragment() {
         binding.resetButton.setOnClickListener {
             val email = binding.resetEmail.text.toString()
 
-            (activity as AuthActivity).hideKeyboard()
+            authActivityContext.hideKeyboard()
 
             requireActivity().let { activity ->
                 FirebaseAuth.getInstance().sendPasswordResetEmail(email)
@@ -50,15 +56,15 @@ class ForgotPassword : Fragment() {
                         if (task.isSuccessful) {
                             binding.resetEmail.text?.clear()
 
-                            Log.w((activity as AuthActivity).getTag(), "Link sent on email!")
+                            Log.d(authActivityContext.getTag(), "Link sent on email!")
                             Toast.makeText(activity, "Link sent on your email!", Toast.LENGTH_SHORT).show()
                         }
                         else {
-                            if (isInternetConnected) {
-                                Log.w((activity as AuthActivity).getTag(), "Missing network connection", task.exception)
+                            if (!isInternetConnected) {
+                                Log.e(authActivityContext.getErrTag(), "Missing network connection: ${task.exception}")
                                 Toast.makeText(activity, "You are not connected to an internet connection", Toast.LENGTH_LONG).show()
                             } else {
-                                Log.w((activity as AuthActivity).getTag(), "Missing network connection", task.exception)
+                                Log.e(authActivityContext.getErrTag(), "Couldn't reset password: ${task.exception}")
                                 Toast.makeText(activity, "Couldn't reset password", Toast.LENGTH_SHORT).show()
                             }
                         }
@@ -77,12 +83,11 @@ class ForgotPassword : Fragment() {
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ) {
             val layoutParams = binding.resetTitle.layoutParams as ViewGroup.MarginLayoutParams
             layoutParams.topMargin = 100
-
             binding.resetTitle.layoutParams = layoutParams
-        } else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+        }
+        else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
             val layoutParams = binding.resetTitle.layoutParams as ViewGroup.MarginLayoutParams
             layoutParams.topMargin = 250
-
             binding.resetTitle.layoutParams = layoutParams
         }
     }

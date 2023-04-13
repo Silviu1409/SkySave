@@ -30,6 +30,7 @@ class Files : Fragment() {
 
     private var isStarred: Boolean = false
 
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentFilesBinding.inflate(inflater, container, false)
 
@@ -44,7 +45,7 @@ class Files : Fragment() {
         adapter = FileAdapter(context, this, arrayListOf())
         recyclerView.adapter = adapter
 
-        val filesRef = (activity as MainActivity).getFolderRef().child("files")
+        val filesRef = mainActivityContext.getFolderRef().child("files")
         val query = filesRef.listAll()
 
         query.addOnSuccessListener { result ->
@@ -61,13 +62,13 @@ class Files : Fragment() {
             }
 
             recyclerView.adapter = adapter
-        }.addOnFailureListener {
-            Log.w((activity as MainActivity).getTag(), "Cannot display file RecyclerView")
+        }.addOnFailureListener { e ->
+            Log.e(mainActivityContext.getTag(), "Cannot display file RecyclerView: ${e.message}")
         }
 
         binding.searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
-                (activity as MainActivity).hideKeyboard()
+                mainActivityContext.hideKeyboard()
                 return false
             }
 

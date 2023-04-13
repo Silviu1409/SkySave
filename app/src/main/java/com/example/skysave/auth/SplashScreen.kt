@@ -23,16 +23,21 @@ class SplashScreen : Fragment() {
     private var _binding: FragmentSplashScreenBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var authActivityContext: AuthActivity
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSplashScreenBinding.inflate(inflater, container, false)
 
+        authActivityContext = (activity as AuthActivity)
+
         val motionLayout = binding.SplashScreen
         motionLayout.addTransitionListener(object: MotionLayout.TransitionListener{
             override fun onTransitionStarted(motionLayout: MotionLayout?, startId: Int, endId: Int) {
-                if ((activity as AuthActivity).getLogout()){
+                if (authActivityContext.getLogout()){
                     findNavController().navigate(R.id.action_SplashScreen_to_Login)
                 }
             }
@@ -66,8 +71,8 @@ class SplashScreen : Fragment() {
                                 startActivity(intent)
                             }
                         }
-                        .addOnFailureListener { exception ->
-                            Log.w(tag, "Error fetching documents", exception)
+                        .addOnFailureListener { e ->
+                            Log.e(authActivityContext.getErrTag(), "Error fetching documents: ${e.message}")
                             Toast.makeText(context, "Couldn't automatically log in", Toast.LENGTH_SHORT).show()
                         }
                 } else {

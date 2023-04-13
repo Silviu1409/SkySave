@@ -34,6 +34,7 @@ import java.io.ByteArrayOutputStream
 
 class AuthActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAuthBinding
+    private val errTag = "errtest"
     private val tag = "test"
 
     private lateinit var googleSignInClient: GoogleSignInClient
@@ -58,15 +59,21 @@ class AuthActivity : AppCompatActivity() {
                     .addOnCompleteListener { task2 ->
                         if (task2.isSuccessful) {
                             val signInMethods = task2.result?.signInMethods
+
                             if (!(signInMethods != null && signInMethods.isNotEmpty())) {
-                                Log.w(tag, "Not signed in")
+                                Log.d(tag, "Not signed in")
                                 signedinPreviously = false
                             }
                         }
                     }
+                    .addOnFailureListener { e ->
+                        Log.e(errTag, "Failed to get signIn methods: ${e.message}")
+                    }
 
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
+                Log.e(errTag, "Failed to log in: ${e.message}")
+
                 Toast.makeText(this, "Logare eșuată!", Toast.LENGTH_LONG).show()
             }
         }
@@ -141,15 +148,15 @@ class AuthActivity : AppCompatActivity() {
                                             val uploadTask = imageRef.putBytes(data)
                                             uploadTask
                                                 .addOnSuccessListener {
-                                                    Log.w(tag, "Created folder for user")
+                                                    Log.d(tag, "Created folder for user")
 
                                                     val dateUser = User(user.uid, user.email ?: "", user.displayName ?: "", listOf())
                                                     val intent = Intent(this@AuthActivity, MainActivity::class.java)
                                                     intent.putExtra("user", dateUser)
                                                     startActivity(intent)
                                                 }
-                                                .addOnFailureListener {exception ->
-                                                    Log.w(tag, "Error creating folder", exception)
+                                                .addOnFailureListener { e ->
+                                                    Log.e(errTag, "Error creating folder: ${e.message}")
                                                     Toast.makeText(this@AuthActivity, "Couldn't create folder", Toast.LENGTH_SHORT).show()
                                                 }
                                         }
@@ -159,12 +166,14 @@ class AuthActivity : AppCompatActivity() {
                                         }
                                     })
                                 }
-                                .addOnFailureListener { exception ->
-                                    Log.w(tag, "Error fetching documents", exception)
+                                .addOnFailureListener { e ->
+                                    Log.e(errTag, "Error fetching documents: ${e.message}")
+
                                     Toast.makeText(this, "Couldn't register", Toast.LENGTH_SHORT).show()
                                 }
                         } else {
-                            Log.w(tag, "User wasn't created", task.exception)
+                            Log.e(errTag, "User wasn't created: ${task.exception}")
+
                             Toast.makeText(this, "Couldn't register", Toast.LENGTH_SHORT).show()
                         }
                     } else {
@@ -185,16 +194,20 @@ class AuthActivity : AppCompatActivity() {
                                         startActivity(intent)
                                     }
                                 }
-                                .addOnFailureListener { exception ->
-                                    Log.w(tag, "Error fetching documents", exception)
+                                .addOnFailureListener { e ->
+                                    Log.e(errTag, "Error fetching documents: ${e.message}")
+
                                     Toast.makeText(this, "Couldn't log in", Toast.LENGTH_SHORT).show()
                                 }
                         } else {
-                            Log.w(tag, "User does not exist", task.exception)
+                            Log.e(errTag, "User does not exist: ${task.exception}")
+
                             Toast.makeText(this, "Couldn't log in", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } else {
+                    Log.e(errTag, "Failed to log in: ${task.exception}")
+
                     Toast.makeText(this, "Logare eșuată!", Toast.LENGTH_LONG).show()
                 }
             }
@@ -241,6 +254,10 @@ class AuthActivity : AppCompatActivity() {
 
     fun getTag(): String{
         return tag
+    }
+
+    fun getErrTag(): String{
+        return errTag
     }
 
     fun getDB(): FirebaseFirestore {

@@ -29,11 +29,17 @@ class Register : Fragment() {
     private var _binding: FragmentRegisterBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var authActivityContext: AuthActivity
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentRegisterBinding.inflate(inflater, container, false)
+
+        authActivityContext = (activity as AuthActivity)
+
         return binding.root
     }
 
@@ -45,12 +51,13 @@ class Register : Fragment() {
         val capabilities = connectivityManager.getNetworkCapabilities(network)
         val isInternetConnected = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
 
+
         binding.registerButton.setOnClickListener {
             val email = binding.registerEmail.text.toString()
             val password = binding.registerPassword.text.toString()
             val alias = binding.registerAlias.text.toString()
 
-            (activity as AuthActivity).hideKeyboard()
+            authActivityContext.hideKeyboard()
 
             requireActivity().let { activity ->
                 FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
@@ -64,7 +71,7 @@ class Register : Fragment() {
                             date["starred_files"] = listOf<String>()
 
                             if (user != null) {
-                                (activity as AuthActivity).getDB().collection("users")
+                                authActivityContext.getDB().collection("users")
                                     .document(user.uid)
                                     .set(date)
                                     .addOnSuccessListener {
@@ -78,7 +85,7 @@ class Register : Fragment() {
                                                 resource: Bitmap,
                                                 transition: Transition<in Bitmap>?
                                             ) {
-                                                val folderRef = activity.getStorage().child(user.uid)
+                                                val folderRef = authActivityContext.getStorage().child(user.uid)
                                                 val imageRef = folderRef.child("icon.jpg")
 
                                                 val baos = ByteArrayOutputStream()
@@ -88,40 +95,39 @@ class Register : Fragment() {
                                                 val uploadTask = imageRef.putBytes(data)
                                                 uploadTask
                                                     .addOnSuccessListener {
-                                                        Log.w(tag, "Created folder for user")
+                                                        Log.d(authActivityContext.getTag(), "Created folder for user and registered successfully")
 
-                                                        Log.w(activity.getTag(), "Registered successfully")
                                                         Toast.makeText(activity, "Registered successfully! Go to the login page to log in.", Toast.LENGTH_LONG).show()
 
                                                         binding.registerEmail.text?.clear()
                                                         binding.registerPassword.text?.clear()
                                                         binding.registerAlias.text?.clear()
                                                     }
-                                                    .addOnFailureListener {exception ->
-                                                        Log.w(tag, "Error creating folder", exception)
+                                                    .addOnFailureListener { e ->
+                                                        Log.e(authActivityContext.getErrTag(), "Error creating folder: ${e.message}")
                                                         Toast.makeText(activity, "Couldn't create folder", Toast.LENGTH_SHORT).show()
                                                     }
                                             }
 
                                             override fun onLoadCleared(placeholder: Drawable?) {
-                                                Log.w(tag, "Cancelled load")
+                                                Log.w(authActivityContext.getTag(), "Cancelled load")
                                             }
                                         })
                                     }
-                                    .addOnFailureListener { exception ->
-                                        Log.w(activity.getTag(), "Error fetching documents", exception)
+                                    .addOnFailureListener { e ->
+                                        Log.e(authActivityContext.getErrTag(), "Error fetching documents: ${e.message}")
                                         Toast.makeText(activity, "Couldn't register", Toast.LENGTH_SHORT).show()
                                     }
                             } else {
-                                Log.w((activity as AuthActivity).getTag(), "User wasn't created", task.exception)
+                                Log.e(authActivityContext.getErrTag(), "User wasn't created: ${task.exception}")
                                 Toast.makeText(activity, "Couldn't register", Toast.LENGTH_SHORT).show()
                             }
                         } else {
-                            if (isInternetConnected) {
-                                Log.w((activity as AuthActivity).getTag(), "Missing network connection", task.exception)
+                            if (!isInternetConnected) {
+                                Log.e(authActivityContext.getErrTag(), "Missing network connection: ${task.exception}")
                                 Toast.makeText(activity, "You are not connected to an internet connection", Toast.LENGTH_LONG).show()
                             } else {
-                                Log.w((activity as AuthActivity).getTag(), "Missing network connection", task.exception)
+                                Log.e(authActivityContext.getErrTag(), "Missing network connection: ${task.exception}")
                                 Toast.makeText(activity, "Couldn't register", Toast.LENGTH_SHORT).show()
                             }
                         }

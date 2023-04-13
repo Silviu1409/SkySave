@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val tag = "test"
-    private val errTag = "err"
+    private val errTag = "errtest"
 
     private lateinit var auth: FirebaseAuth
     private var user: User? = null
@@ -82,10 +82,10 @@ class MainActivity : AppCompatActivity() {
                 fileSize = this.contentResolver.openInputStream(uri)?.available()?.toLong()?: 0L
 
                 if (fileSize > fileSizeLimit){
-                    Log.w(tag, "File is too large (> 50MB)")
-
+                    Log.e(tag, "File is too large (> 50MB)")
                     Toast.makeText(this, "File is too large (> 50MB)", Toast.LENGTH_SHORT).show()
-                } else {
+                }
+                else {
                     selectedFileUri = uri
 
                     contentResolver.query(uri, null, null, null, null)?.use { cursor ->
@@ -188,13 +188,6 @@ class MainActivity : AppCompatActivity() {
             fileDir.mkdir()
         }
 
-        /*
-            Log.w(tag, user!!.uid)
-            Log.w(tag, user!!.alias)
-            Log.w(tag, user!!.email)
-            Log.w(tag, user!!.starred_files.toString())
-        */
-
         onConfigurationChanged(resources.configuration)
     }
 
@@ -221,25 +214,24 @@ class MainActivity : AppCompatActivity() {
     private fun uploadFile() {
         // check if firebase storage cap has been reached
         if (folderSize + fileSize > folderSizeLimit) {
-            Log.w(tag, "Cannot upload file, storage limit reached")
+            Log.e(tag, "Cannot upload file, storage limit reached")
 
             Toast.makeText(this, "Cannot upload, storage limit reached!", Toast.LENGTH_SHORT).show()
 
             return
         }
 
-        notificationChannel("upload_notification_channel", NotificationManager.IMPORTANCE_LOW)
+        notificationUploadChannel("upload_notification_channel", NotificationManager.IMPORTANCE_LOW)
 
         val fileRef = folderRef.child("files/$fileName")
 
         fileRef.downloadUrl
             .addOnSuccessListener {
                 Log.w(tag, "File already exists!")
-
                 Toast.makeText(this, "File already uploaded!", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener {
-                Log.w(tag, "File doesn't already exist.")
+                Log.d(tag, "File doesn't already exist.")
 
                 val uploadTask = fileRef.putFile(selectedFileUri)
 
@@ -265,7 +257,7 @@ class MainActivity : AppCompatActivity() {
                             .setProgress(0, 0, false)
                         notificationManager.notify(notificationId, notificationBuilder.build())
 
-                        notificationChannel("upload_notification_channel_2", NotificationManager.IMPORTANCE_HIGH)
+                        notificationUploadChannel("upload_notification_channel_2", NotificationManager.IMPORTANCE_HIGH)
 
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://skysave.com/files"))
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -296,20 +288,21 @@ class MainActivity : AppCompatActivity() {
                         changePreferencesFolderSize()
                         setStorageSpaceUsed(getReadableFileSize(folderSize.toDouble()))
 
-                        Log.w(tag, "File uploaded")
-
+                        Log.d(tag, "File uploaded")
                     }
-                    .addOnFailureListener { exception ->
-                        notificationBuilder.setContentText("Upload failed: ${exception.message}")
+                    .addOnFailureListener { e ->
+                        notificationBuilder
+                            .setContentText("Upload failed: ${e.message}")
                             .setProgress(0, 0, false)
+
                         notificationManager.notify(notificationId, notificationBuilder.build())
 
-                        Log.w(tag, "Failed to upload file")
+                        Log.e(tag, "Failed to upload file: ${e.message}")
                     }
             }
     }
 
-    private fun notificationChannel(channelId: String, importance: Int) {
+    private fun notificationUploadChannel(channelId: String, importance: Int) {
         val channelName = "Upload Notification Channel"
         val channelDescription = "Shows upload progress while a file is uploaded to Firebase Storage"
         val channel = NotificationChannel(channelId, channelName, importance)
@@ -337,7 +330,7 @@ class MainActivity : AppCompatActivity() {
             for(item in listResult.items){
                 val metadata = item.metadata.await()
 
-                Log.w(tag, metadata.sizeBytes.toString())
+                Log.d(tag, metadata.sizeBytes.toString())
                 size += metadata.sizeBytes
             }
         }

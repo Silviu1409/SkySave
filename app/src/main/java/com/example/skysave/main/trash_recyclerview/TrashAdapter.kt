@@ -71,8 +71,8 @@ class TrashAdapter(private val context: Context?, private val fragment: Trash, p
                 val fileSize = mainActivityContext.getReadableFileSize(fileSizeInBytes.toDouble())
                 holder.trashSizeView.text = fileSize
             }
-            .addOnFailureListener {  exception ->
-                Log.e(mainActivityContext.getErrTag(), "Failed to get file metadata: $exception")
+            .addOnFailureListener { e ->
+                Log.e(mainActivityContext.getErrTag(), "Failed to get file metadata: ${e.message}")
             }
 
         holder.trashRestoreView.setOnClickListener {
@@ -90,16 +90,16 @@ class TrashAdapter(private val context: Context?, private val fragment: Trash, p
 
                         Log.d(mainActivityContext.getTag(), "File restored successfully.")
                     }
-                    .addOnFailureListener { exception ->
-                        Log.e(mainActivityContext.getErrTag(), "Failed to delete the original file: $exception")
+                    .addOnFailureListener { e ->
+                        Log.e(mainActivityContext.getErrTag(), "Failed to delete the original file: ${e.message}")
                     }
                 }
-                .addOnFailureListener { exception ->
-                    Log.e(mainActivityContext.getErrTag(), "Failed to move the file: $exception")
+                .addOnFailureListener { e ->
+                    Log.e(mainActivityContext.getErrTag(), "Failed to move the file: ${e.message}")
                 }
             }
-            .addOnFailureListener { exception ->
-                Log.e(mainActivityContext.getErrTag(), "Failed to download the source file: $exception")
+            .addOnFailureListener { e ->
+                Log.e(mainActivityContext.getErrTag(), "Failed to download the source file: ${e.message}")
             }
         }
 
@@ -116,8 +116,8 @@ class TrashAdapter(private val context: Context?, private val fragment: Trash, p
 
                     Log.d(mainActivityContext.getTag(), "File removed successfully.")
                 }
-                .addOnFailureListener {  exception ->
-                    Log.e(mainActivityContext.getErrTag(), "Failed to remove file: $exception")
+                .addOnFailureListener {  e ->
+                    Log.e(mainActivityContext.getErrTag(), "Failed to remove file: ${e.message}")
                 }
         }
     }

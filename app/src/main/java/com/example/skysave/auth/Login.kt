@@ -25,11 +25,17 @@ class Login : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var authActivityContext: AuthActivity
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
+
+        authActivityContext = (activity as AuthActivity)
+
         return binding.root
     }
 
@@ -38,7 +44,7 @@ class Login : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.loginButtonGoogle.setOnClickListener {
-            (activity as AuthActivity).signIn()
+            authActivityContext.signIn()
         }
 
         val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -50,7 +56,7 @@ class Login : Fragment() {
             val email = binding.loginEmail.text.toString()
             val password = binding.loginPassword.text.toString()
 
-            (activity as AuthActivity).hideKeyboard()
+            authActivityContext.hideKeyboard()
 
             requireActivity().let { activity ->
                 FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
@@ -59,7 +65,7 @@ class Login : Fragment() {
                             val user = FirebaseAuth.getInstance().currentUser
 
                             if (user != null) {
-                                (activity as AuthActivity).getDB().collection("users")
+                                authActivityContext.getDB().collection("users")
                                     .document(user.uid)
                                     .get()
                                     .addOnSuccessListener {document ->
@@ -75,21 +81,21 @@ class Login : Fragment() {
                                             startActivity(intent)
                                         }
                                     }
-                                    .addOnFailureListener { exception ->
-                                        Log.w(activity.getTag(), "Error fetching documents", exception)
+                                    .addOnFailureListener { e ->
+                                        Log.e(authActivityContext.getErrTag(), "Error fetching documents: ${e.message}")
                                         Toast.makeText(activity, "Couldn't log in", Toast.LENGTH_SHORT).show()
                                     }
 
                             } else {
-                                Log.w((activity as AuthActivity).getTag(), "User does not exist", task.exception)
+                                Log.e(authActivityContext.getErrTag(), "User does not exist: ${task.exception}")
                                 Toast.makeText(activity, "Couldn't log in", Toast.LENGTH_SHORT).show()
                             }
                         } else {
-                            if (isInternetConnected) {
-                                Log.w((activity as AuthActivity).getTag(), "Missing network connection", task.exception)
+                            if (!isInternetConnected) {
+                                Log.e(authActivityContext.getErrTag(), "Missing network connection: ${task.exception}")
                                 Toast.makeText(activity, "You are not connected to an internet connection", Toast.LENGTH_LONG).show()
                             } else {
-                                Log.w((activity as AuthActivity).getTag(), "Error logging in", task.exception)
+                                Log.e(authActivityContext.getErrTag(), "Error logging in: ${task.exception}")
                                 Toast.makeText(activity, "Couldn't log in", Toast.LENGTH_SHORT).show()
                             }
                         }
