@@ -5,6 +5,9 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -15,9 +18,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.MimeTypeMap
 import android.widget.Filter
 import android.widget.Filterable
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -40,6 +45,7 @@ import kotlin.math.roundToInt
 class FileAdapter(private val context: Context?, private val fragment: Files, private val files: ArrayList<StorageReference>) : RecyclerView.Adapter<FileViewHolder>(), Filterable, Player.Listener {
 
     var filteredFileItems = files
+
     private val mainActivityContext = (context as MainActivity)
     private var starredFiles: List<String> = mainActivityContext.getUser()?.starred_files ?: listOf()
     private val fileDir = mainActivityContext.getFileDir()
@@ -327,12 +333,14 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
 
         holder.fileViewView.setOnClickListener {
             val context: Context = holder.itemView.context
+
             val fileUri = FileProvider.getUriForFile(context, context.packageName + ".provider", localFile)
             val intent = Intent(Intent.ACTION_VIEW)
-            intent.setDataAndType(fileUri, "*/*")
+            intent.setDataAndType(fileUri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(localFile.extension))
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+
             try {
-                context.startActivity(intent)
+                context.startActivity(Intent.createChooser(intent, "Open with"))
             } catch (e: ActivityNotFoundException) {
                 Log.e(mainActivityContext.getErrTag(), "Activity not found: ${e.message}")
             }
@@ -346,19 +354,71 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
             if (tempLocalFile.exists() && tempLocalFile.length() > 0) {
                 tempLocalFile.copyTo(localFile, true)
                 Log.d(mainActivityContext.getTag(), "Got file from cache!")
+                Toast.makeText(context, "${file.name} downloaded!", Toast.LENGTH_SHORT).show()
 
                 holder.fileDownloadView.visibility = View.GONE
                 holder.fileViewView.visibility = View.VISIBLE
             } else {
-                file.getFile(localFile).addOnSuccessListener {
-                    Log.d(mainActivityContext.getTag(), "File downloaded successfully!")
-                    Toast.makeText(context, "${file.name} downloaded!", Toast.LENGTH_SHORT).show()
+                notificationDownloadChannel("download_notification_channel", NotificationManager.IMPORTANCE_LOW)
 
-                    holder.fileDownloadView.visibility = View.GONE
-                    holder.fileViewView.visibility = View.VISIBLE
-                }.addOnFailureListener { e ->
-                    Log.e(mainActivityContext.getErrTag(), "Failed to download file: ${e.message}")
-                }
+                val notificationId = 0
+
+                val notificationBuilder = NotificationCompat.Builder(context, "download_notification_channel")
+                    .setContentTitle("Downloading ${file.name}")
+                    .setSmallIcon(R.drawable.icon_notification)
+                    .setProgress(100, 0, false)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+
+                val notificationManager = context.getSystemService(NotificationManager::class.java)
+                notificationManager.notify(notificationId, notificationBuilder.build())
+
+                file.getFile(localFile)
+                    .addOnProgressListener { snapshot ->
+                        val progress = (100.0 * snapshot.bytesTransferred / snapshot.totalByteCount).toInt()
+                        notificationBuilder.setProgress(100, progress, false).setContentText("$progress%")
+                        notificationManager.notify(notificationId, notificationBuilder.build())
+                    }
+                    .addOnSuccessListener {
+
+                        notificationBuilder.setContentText("Download complete")
+                            .setProgress(0, 0, false)
+                        notificationManager.notify(notificationId, notificationBuilder.build())
+
+                        val context: Context = holder.itemView.context
+
+                        val fileUri = FileProvider.getUriForFile(context, context.packageName + ".provider", localFile)
+                        val intent = Intent(Intent.ACTION_VIEW)
+                        intent.setDataAndType(fileUri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(localFile.extension))
+                        intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+
+                        notificationDownloadChannel("download_notification_channel_2", NotificationManager.IMPORTANCE_HIGH)
+
+                        val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+                        val completedNotificationBuilder = NotificationCompat.Builder(context, "download_notification_channel_2")
+                            .setSmallIcon(R.drawable.icon_notification)
+                            .setContentTitle("File download Complete")
+                            .setContentText("Your file has been downloaded successfully.")
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .setContentIntent(pendingIntent)
+                            .setAutoCancel(true)
+                        notificationManager.notify(notificationId, completedNotificationBuilder.build())
+
+                        Log.d(mainActivityContext.getTag(), "File downloaded successfully!")
+                        Toast.makeText(context, "${file.name} downloaded!", Toast.LENGTH_SHORT).show()
+
+                        holder.fileDownloadView.visibility = View.GONE
+                        holder.fileViewView.visibility = View.VISIBLE
+                    }
+                    .addOnFailureListener { e ->
+                        notificationBuilder
+                            .setContentText("Download failed: ${e.message}")
+                            .setProgress(0, 0, false)
+
+                        notificationManager.notify(notificationId, notificationBuilder.build())
+
+                        Log.e(mainActivityContext.getErrTag(), "Failed to download file: ${e.message}")
+                    }
             }
         }
 
@@ -396,11 +456,24 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                             files.remove(file)
                             notifyItemRemoved(position)
 
-                            tempLocalFile.delete()
-                            file.delete()
+                            val aux = starredFiles.toMutableList()
+                            aux.remove(file.toString())
+                            starredFiles = aux.toList()
+                            mainActivityContext.getUser()?.starred_files = starredFiles
 
-                            Log.d(mainActivityContext.getTag(), "File moved successfully!")
-                            Toast.makeText(context, "${newFile.name} moved to trash!", Toast.LENGTH_SHORT).show()
+                            mainActivityContext.getDb().collection("users")
+                                .document(mainActivityContext.getUser()!!.uid)
+                                .update("starred_files", starredFiles)
+                                .addOnSuccessListener {
+                                    tempLocalFile.delete()
+                                    file.delete()
+
+                                    Log.d(mainActivityContext.getTag(), "File moved successfully!")
+                                    Toast.makeText(context, "${newFile.name} moved to trash!", Toast.LENGTH_SHORT).show()
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.e(mainActivityContext.getErrTag(), "Failed to remove starred file ref from db: ${e.message}")
+                                }
                         }
                         .addOnFailureListener { e ->
                             tempLocalFile.delete()
@@ -414,6 +487,15 @@ class FileAdapter(private val context: Context?, private val fragment: Files, pr
                     Log.e(mainActivityContext.getErrTag(), "Failed to move file: ${e.message}")
                 }
         }
+    }
+
+    private fun notificationDownloadChannel(channelId: String, importance: Int) {
+        val channelName = "Download Notification Channel"
+        val channelDescription = "Shows download progress while a file is being downloaded from Firebase Storage"
+        val channel = NotificationChannel(channelId, channelName, importance)
+        channel.description = channelDescription
+        val notificationManager = context!!.getSystemService(NotificationManager::class.java)
+        notificationManager.createNotificationChannel(channel)
     }
 
     fun addItem(newFile: StorageReference){

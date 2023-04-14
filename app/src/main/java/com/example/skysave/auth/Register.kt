@@ -59,6 +59,13 @@ class Register : Fragment() {
 
             authActivityContext.hideKeyboard()
 
+            if (email == "" || password == "" || alias == ""){
+                Log.d(authActivityContext.getTag(), "Empty field(s)!")
+                Toast.makeText(activity, "Empty field(s)!", Toast.LENGTH_SHORT).show()
+
+                return@setOnClickListener
+            }
+
             requireActivity().let { activity ->
                 FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(activity) { task ->

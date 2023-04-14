@@ -145,6 +145,8 @@ class MainActivity : AppCompatActivity() {
             sharedPreferencesUser.edit().putString("email", user!!.email).apply()
             sharedPreferencesUser.edit().putStringSet("starred_files", HashSet(user!!.starred_files)).apply()
         } else {
+            Log.d(tag, "Opened from uri (notification)!")
+
             if (sharedPreferencesUser.contains("uid")) {
                 user = User(
                     sharedPreferencesUser.getString("uid", "")!!,
@@ -259,7 +261,7 @@ class MainActivity : AppCompatActivity() {
 
                         notificationUploadChannel("upload_notification_channel_2", NotificationManager.IMPORTANCE_HIGH)
 
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://skysave.com/files"))
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://skysave.com/files"), applicationContext, MainActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                         val pendingIntent = PendingIntent.getActivity(applicationContext, 1, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
 
@@ -269,6 +271,7 @@ class MainActivity : AppCompatActivity() {
                             .setContentText("Your file has been uploaded successfully.")
                             .setPriority(NotificationCompat.PRIORITY_HIGH)
                             .setContentIntent(pendingIntent)
+                            .setAutoCancel(true)
                         notificationManager.notify(notificationId, completedNotificationBuilder.build())
 
                         val fragment = supportFragmentManager.fragments.first()
@@ -384,6 +387,10 @@ class MainActivity : AppCompatActivity() {
 
     fun getFileDir(): File{
         return fileDir
+    }
+
+    fun setFileDir(newDir: File){
+        fileDir = newDir
     }
 
     fun getFolderSize(): Long{

@@ -111,6 +111,11 @@ class Profile : Fragment() {
                     .addOnSuccessListener {
                         Log.d(mainActivityContext.getTag(), "Updated user alias!")
                         Toast.makeText(context, "Updated alias!", Toast.LENGTH_SHORT).show()
+
+                        val newFolder = File(mainActivityContext.getFileDir().parentFile, newUserAlias)
+                        mainActivityContext.getFileDir().renameTo(newFolder)
+                        mainActivityContext.setFileDir(newFolder)
+                        Log.d(mainActivityContext.getTag(), "Renamed user folder!")
                     }
                     .addOnFailureListener {  e ->
                         Log.e(mainActivityContext.getErrTag(), "Could not update user alias: ${e.message}")

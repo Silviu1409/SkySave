@@ -50,6 +50,13 @@ class ForgotPassword : Fragment() {
 
             authActivityContext.hideKeyboard()
 
+            if (email == "" ){
+                Log.d(authActivityContext.getTag(), "No email address provided!")
+                Toast.makeText(activity, "No email address provided!", Toast.LENGTH_SHORT).show()
+
+                return@setOnClickListener
+            }
+
             requireActivity().let { activity ->
                 FirebaseAuth.getInstance().sendPasswordResetEmail(email)
                     .addOnCompleteListener(activity) { task ->

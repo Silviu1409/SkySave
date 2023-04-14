@@ -58,6 +58,13 @@ class Login : Fragment() {
 
             authActivityContext.hideKeyboard()
 
+            if (email == "" || password == ""){
+                Log.d(authActivityContext.getTag(), "Empty field(s)!")
+                Toast.makeText(activity, "Empty field(s)!", Toast.LENGTH_SHORT).show()
+
+                return@setOnClickListener
+            }
+
             requireActivity().let { activity ->
                 FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(activity) { task ->
