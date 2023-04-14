@@ -22,6 +22,9 @@ import com.example.skysave.AuthActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import java.io.ByteArrayOutputStream
 
 
@@ -134,8 +137,22 @@ class Register : Fragment() {
                                 Log.e(authActivityContext.getErrTag(), "Missing network connection: ${task.exception}")
                                 Toast.makeText(activity, "You are not connected to an internet connection", Toast.LENGTH_LONG).show()
                             } else {
-                                Log.e(authActivityContext.getErrTag(), "Missing network connection: ${task.exception}")
-                                Toast.makeText(activity, "Couldn't register", Toast.LENGTH_SHORT).show()
+                                try {
+                                    throw task.exception!!
+                                } catch (e: FirebaseAuthWeakPasswordException) {
+                                    Log.e(authActivityContext.getErrTag(), "Weak password: ${e.message}")
+                                    Toast.makeText(activity, "Password is too weak!", Toast.LENGTH_SHORT).show()
+                                } catch (e: FirebaseAuthInvalidCredentialsException) {
+                                    Log.e(authActivityContext.getErrTag(), "Invalid email format: ${e.message}")
+                                    Toast.makeText(activity, "Invalid email format!", Toast.LENGTH_SHORT).show()
+                                } catch (e: FirebaseAuthUserCollisionException) {
+                                    Log.e(authActivityContext.getErrTag(), "Account already exists for this email: ${e.message}")
+                                    Toast.makeText(activity, "An account for this email address already exists!", Toast.LENGTH_SHORT).show()
+                                }
+                                catch (e: Exception) {
+                                    Log.e(authActivityContext.getErrTag(), "Error at register: ${e.message}")
+                                    Toast.makeText(activity, "Couldn't register!", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
                     }

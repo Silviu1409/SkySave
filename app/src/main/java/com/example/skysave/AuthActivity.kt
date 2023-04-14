@@ -60,7 +60,7 @@ class AuthActivity : AppCompatActivity() {
                         if (task2.isSuccessful) {
                             val signInMethods = task2.result?.signInMethods
 
-                            if (!(signInMethods != null && signInMethods.isNotEmpty())) {
+                            if (signInMethods.isNullOrEmpty()) {
                                 Log.d(tag, "Not signed in")
                                 signedinPreviously = false
                             }

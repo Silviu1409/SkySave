@@ -201,7 +201,6 @@ class MainActivity : AppCompatActivity() {
         cardView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 val cardWidth = cardView.width
-                Log.d(tag, cardView.width.toString())
 
                 val layoutParams = binding.uploadFab.layoutParams as ViewGroup.MarginLayoutParams
                 layoutParams.marginStart = (0.125 * cardWidth).toInt()
@@ -333,7 +332,6 @@ class MainActivity : AppCompatActivity() {
             for(item in listResult.items){
                 val metadata = item.metadata.await()
 
-                Log.d(tag, metadata.sizeBytes.toString())
                 size += metadata.sizeBytes
             }
         }

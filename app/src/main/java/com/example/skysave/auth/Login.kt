@@ -19,6 +19,8 @@ import com.example.skysave.MainActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentLoginBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 
 
 class Login : Fragment() {
@@ -102,8 +104,18 @@ class Login : Fragment() {
                                 Log.e(authActivityContext.getErrTag(), "Missing network connection: ${task.exception}")
                                 Toast.makeText(activity, "You are not connected to an internet connection", Toast.LENGTH_LONG).show()
                             } else {
-                                Log.e(authActivityContext.getErrTag(), "Error logging in: ${task.exception}")
-                                Toast.makeText(activity, "Couldn't log in", Toast.LENGTH_SHORT).show()
+                                try {
+                                    throw task.exception!!
+                                } catch (e: FirebaseAuthInvalidUserException) {
+                                    Log.e(authActivityContext.getErrTag(), "Account does not exist: ${e.message}")
+                                    Toast.makeText(activity, "This account does not exist!", Toast.LENGTH_SHORT).show()
+                                } catch (e: FirebaseAuthInvalidCredentialsException) {
+                                    Log.e(authActivityContext.getErrTag(), "Password is wrong: ${e.message}")
+                                    Toast.makeText(activity, "Password is wrong!", Toast.LENGTH_SHORT).show()
+                                } catch (e: Exception) {
+                                    Log.e(authActivityContext.getErrTag(), "Error logging in: ${e.message}")
+                                    Toast.makeText(activity, "Couldn't log in!", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
                     }

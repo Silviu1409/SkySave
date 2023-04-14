@@ -16,6 +16,8 @@ import com.example.skysave.AuthActivity
 import com.example.skysave.R
 import com.example.skysave.databinding.FragmentForgotPasswordBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 
 
 class ForgotPassword : Fragment() {
@@ -71,8 +73,18 @@ class ForgotPassword : Fragment() {
                                 Log.e(authActivityContext.getErrTag(), "Missing network connection: ${task.exception}")
                                 Toast.makeText(activity, "You are not connected to an internet connection", Toast.LENGTH_LONG).show()
                             } else {
-                                Log.e(authActivityContext.getErrTag(), "Couldn't reset password: ${task.exception}")
-                                Toast.makeText(activity, "Couldn't reset password", Toast.LENGTH_SHORT).show()
+                                try {
+                                    throw task.exception!!
+                                } catch (e: FirebaseAuthInvalidUserException) {
+                                    Log.e(authActivityContext.getErrTag(), "Email is not valid: ${e.message}")
+                                    Toast.makeText(activity, "Email is not valid!", Toast.LENGTH_SHORT).show()
+                                } catch (e: FirebaseAuthInvalidCredentialsException) {
+                                    Log.e(authActivityContext.getErrTag(), "Wrong email format: ${e.message}")
+                                    Toast.makeText(activity, "Wrong email format!", Toast.LENGTH_SHORT).show()
+                                } catch (e: Exception) {
+                                    Log.e(authActivityContext.getErrTag(), "Couldn't reset password: ${e.message}")
+                                    Toast.makeText(activity, "Couldn't reset password!", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
                     }
@@ -94,7 +106,7 @@ class ForgotPassword : Fragment() {
         }
         else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
             val layoutParams = binding.resetTitle.layoutParams as ViewGroup.MarginLayoutParams
-            layoutParams.topMargin = 250
+            layoutParams.topMargin = 350
             binding.resetTitle.layoutParams = layoutParams
         }
     }
