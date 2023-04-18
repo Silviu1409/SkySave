@@ -54,9 +54,10 @@ class MainActivity : AppCompatActivity() {
     private val errTag = "errtest"
 
     private lateinit var auth: FirebaseAuth
-    private var user: User? = null
     private lateinit var folderRef: StorageReference
     private lateinit var db: FirebaseFirestore
+
+    private var user: User? = null
 
     private lateinit var selectedFileUri: Uri
     private lateinit var fileName: String

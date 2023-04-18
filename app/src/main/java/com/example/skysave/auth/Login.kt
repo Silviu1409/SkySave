@@ -130,12 +130,13 @@ class Login : Fragment() {
             findNavController().navigate(R.id.action_Login_to_ForgotPassword)
         }
 
-        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ) {
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             val layoutParams = binding.loginTitle.layoutParams as ViewGroup.MarginLayoutParams
             layoutParams.topMargin = 100
 
             binding.loginTitle.layoutParams = layoutParams
-        } else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+        }
+        else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
             val layoutParams = binding.loginTitle.layoutParams as ViewGroup.MarginLayoutParams
             layoutParams.topMargin = 250
 

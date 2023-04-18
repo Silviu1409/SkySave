@@ -172,7 +172,8 @@ class Register : Fragment() {
             layoutParams.topMargin = 100
 
             binding.registerTitle.layoutParams = layoutParams
-        } else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+        }
+        else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
             val layoutParams = binding.registerTitle.layoutParams as ViewGroup.MarginLayoutParams
             layoutParams.topMargin = 250
 

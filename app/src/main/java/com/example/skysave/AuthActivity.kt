@@ -34,8 +34,9 @@ import java.io.ByteArrayOutputStream
 
 class AuthActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAuthBinding
-    private val errTag = "errtest"
+
     private val tag = "test"
+    private val errTag = "errtest"
 
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var auth: FirebaseAuth
@@ -52,7 +53,6 @@ class AuthActivity : AppCompatActivity() {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)!!
-
                 val email = account.email.toString()
 
                 auth.fetchSignInMethodsForEmail(email)
@@ -73,8 +73,7 @@ class AuthActivity : AppCompatActivity() {
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
                 Log.e(errTag, "Failed to log in: ${e.message}")
-
-                Toast.makeText(this, "Logare eșuată!", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Failed to log in. Try again!", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -116,17 +115,15 @@ class AuthActivity : AppCompatActivity() {
                     val user = auth.currentUser
 
                     if (!signedinPreviously){
-                        val db = FirebaseFirestore.getInstance()
-
-                        val date = HashMap<String, Any>()
-                        date["email"] = user?.email.toString()
-                        date["alias"] = user?.displayName.toString()
-                        date["starred_files"] = listOf<String>()
+                        val userData = HashMap<String, Any>()
+                        userData["email"] = user?.email.toString()
+                        userData["alias"] = user?.displayName.toString()
+                        userData["starred_files"] = listOf<String>()
 
                         if (user != null) {
                             db.collection("users")
                                 .document(user.uid)
-                                .set(date)
+                                .set(userData)
                                 .addOnSuccessListener {
                                     val glide = Glide.with(this)
 
@@ -150,9 +147,9 @@ class AuthActivity : AppCompatActivity() {
                                                 .addOnSuccessListener {
                                                     Log.d(tag, "Created folder for user")
 
-                                                    val dateUser = User(user.uid, user.email ?: "", user.displayName ?: "", listOf())
+                                                    val newUser = User(user.uid, userData["email"].toString(), userData["alias"].toString(), listOf())
                                                     val intent = Intent(this@AuthActivity, MainActivity::class.java)
-                                                    intent.putExtra("user", dateUser)
+                                                    intent.putExtra("user", newUser)
                                                     startActivity(intent)
                                                 }
                                                 .addOnFailureListener { e ->
@@ -168,12 +165,10 @@ class AuthActivity : AppCompatActivity() {
                                 }
                                 .addOnFailureListener { e ->
                                     Log.e(errTag, "Error fetching documents: ${e.message}")
-
                                     Toast.makeText(this, "Couldn't register", Toast.LENGTH_SHORT).show()
                                 }
                         } else {
                             Log.e(errTag, "User wasn't created: ${task.exception}")
-
                             Toast.makeText(this, "Couldn't register", Toast.LENGTH_SHORT).show()
                         }
                     } else {
@@ -196,19 +191,16 @@ class AuthActivity : AppCompatActivity() {
                                 }
                                 .addOnFailureListener { e ->
                                     Log.e(errTag, "Error fetching documents: ${e.message}")
-
                                     Toast.makeText(this, "Couldn't log in", Toast.LENGTH_SHORT).show()
                                 }
                         } else {
                             Log.e(errTag, "User does not exist: ${task.exception}")
-
                             Toast.makeText(this, "Couldn't log in", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } else {
                     Log.e(errTag, "Failed to log in: ${task.exception}")
-
-                    Toast.makeText(this, "Logare eșuată!", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Failed to log in!", Toast.LENGTH_LONG).show()
                 }
             }
     }
