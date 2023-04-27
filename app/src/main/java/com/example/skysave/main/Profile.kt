@@ -112,6 +112,7 @@ class Profile : Fragment() {
                         Log.d(mainActivityContext.getTag(), "Updated user alias!")
                         Toast.makeText(context, "Updated alias!", Toast.LENGTH_SHORT).show()
 
+                        mainActivityContext.getSharedPreferencesUser().edit().putString("alias", newUserAlias).apply()
                         val newFolder = File(mainActivityContext.getFileDir().parentFile, newUserAlias)
                         mainActivityContext.getFileDir().renameTo(newFolder)
                         mainActivityContext.setFileDir(newFolder)

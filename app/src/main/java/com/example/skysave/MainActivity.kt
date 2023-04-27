@@ -137,28 +137,30 @@ class MainActivity : AppCompatActivity() {
         db = FirebaseFirestore.getInstance()
 
         uri = intent.data
-        if (uri == null) {
+        if (uri != null) {
+            Log.d(tag, "Opened from uri (notification)!")
+        }
+
+        if (sharedPreferencesUser.contains("uid")) {
+            user = User(
+                sharedPreferencesUser.getString("uid", "")!!,
+                sharedPreferencesUser.getString("email", "")!!,
+                sharedPreferencesUser.getString("alias", "")!!,
+                sharedPreferencesUser.getStringSet("starred_files", setOf<String>())?.toList()!!
+            )
+        } else {
             @Suppress("DEPRECATION")
             user = intent.getSerializableExtra("user") as? User
 
-            sharedPreferencesUser.edit().putString("uid", user!!.uid).apply()
-            sharedPreferencesUser.edit().putString("alias", user!!.alias).apply()
-            sharedPreferencesUser.edit().putString("email", user!!.email).apply()
-            sharedPreferencesUser.edit().putStringSet("starred_files", HashSet(user!!.starred_files)).apply()
-        } else {
-            Log.d(tag, "Opened from uri (notification)!")
-
-            if (sharedPreferencesUser.contains("uid")) {
-                user = User(
-                    sharedPreferencesUser.getString("uid", "")!!,
-                    sharedPreferencesUser.getString("email", "")!!,
-                    sharedPreferencesUser.getString("alias", "")!!,
-                    sharedPreferencesUser.getStringSet("starred_files", setOf<String>())?.toList()!!
-                )
-            } else {
+            if (user == null){
                 val intent = Intent(this, AuthActivity::class.java)
                 intent.putExtra("logout", true)
                 startActivity(intent)
+            } else {
+                sharedPreferencesUser.edit().putString("uid", user!!.uid).apply()
+                sharedPreferencesUser.edit().putString("alias", user!!.alias).apply()
+                sharedPreferencesUser.edit().putString("email", user!!.email).apply()
+                sharedPreferencesUser.edit().putStringSet("starred_files", HashSet(user!!.starred_files)).apply()
             }
         }
 
@@ -414,5 +416,9 @@ class MainActivity : AppCompatActivity() {
 
     fun removePreferencesUser(){
         sharedPreferencesUser.edit().clear().apply()
+    }
+
+    fun getSharedPreferencesUser(): SharedPreferences {
+        return sharedPreferencesUser
     }
 }

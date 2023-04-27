@@ -102,11 +102,13 @@ class ForgotPassword : Fragment() {
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ) {
             val layoutParams = binding.resetTitle.layoutParams as ViewGroup.MarginLayoutParams
             layoutParams.topMargin = 100
+
             binding.resetTitle.layoutParams = layoutParams
         }
         else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
             val layoutParams = binding.resetTitle.layoutParams as ViewGroup.MarginLayoutParams
             layoutParams.topMargin = 350
+
             binding.resetTitle.layoutParams = layoutParams
         }
     }

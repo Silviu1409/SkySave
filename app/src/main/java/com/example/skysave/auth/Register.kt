@@ -90,6 +90,7 @@ class Register : Fragment() {
                                         val requestBuilder = glide.asBitmap()
                                             .load(R.drawable.default_icon)
                                             .apply(RequestOptions().override(75, 75))
+
                                         requestBuilder.into(object : CustomTarget<Bitmap>() {
                                             override fun onResourceReady(
                                                 resource: Bitmap,
